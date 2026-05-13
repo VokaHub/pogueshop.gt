@@ -29,29 +29,35 @@ html {
 /* Custom Masonry-like grid using CSS columns */
 .masonry-grid {
   columns: 1;
-  column-gap: 1.5rem;
+  column-gap: 2rem;
 }
 
 @media (min-width: 768px) {
   .masonry-grid {
     columns: 2;
-    column-gap: 2rem;
+    column-gap: 3rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .masonry-grid {
+    columns: 3;
+    column-gap: 4rem;
   }
 }
 
 .masonry-item {
   break-inside: avoid;
-  margin-bottom: 2.5rem;
+  margin-bottom: 2rem;
+  width: 100%;
   max-width: 420px;
   margin-left: auto;
   margin-right: auto;
-  width: 100%;
 }
 
 @media (min-width: 768px) {
   .masonry-item {
-    margin-bottom: 4rem;
-    max-width: 360px;
+    margin-bottom: 3.5rem;
   }
 }
 

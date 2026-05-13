@@ -160,27 +160,29 @@ export default function App() {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative h-[80vh] md:h-screen flex items-center justify-center overflow-hidden border-b border-gray-100">
+      <section className="relative h-[85vh] md:h-screen flex items-center justify-center overflow-hidden border-b border-gray-100">
         <div className="absolute inset-0 z-0">
+          <div className="absolute inset-0 bg-black/40 z-10" />
           <img 
-            src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=2670&auto=format&fit=crop" 
-            alt="Pogue Shop GT" 
-            className="w-full h-full object-cover grayscale brightness-105"
+            src="https://raw.githubusercontent.com/VokaHub/pogueshop.gt/main/src/Captura%20de%20pantalla%202026-05-13%20003116.png" 
+            alt="Pogue Editorial Background" 
+            className="w-full h-full object-cover object-center"
+            referrerPolicy="no-referrer"
           />
         </div>
         
         <div className="relative z-20 text-center text-white px-6">
           <motion.div
-            initial={{ opacity: 0, y: 10 }}
+            initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1.2 }}
+            transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
           >
-            <span className="text-[10px] uppercase tracking-[0.5em] font-bold mb-6 block mix-blend-difference">Ropa y accesorios nuevos</span>
-            <h1 className="text-[18vw] md:text-[15rem] font-serif mb-12 tracking-tighter leading-[0.85] mix-blend-difference">
+            <span className="text-[10px] md:text-[11px] uppercase tracking-[0.5em] font-bold mb-6 block drop-shadow-md">Ropa y accesorios nuevos</span>
+            <h1 className="text-[18vw] md:text-[15rem] font-serif mb-12 tracking-tighter leading-[0.85] text-white drop-shadow-[0_10px_20px_rgba(0,0,0,0.2)]">
               POGUE
             </h1>
             <div className="flex flex-col items-center gap-12">
-              <div className="flex items-center gap-8 text-[9px] md:text-[10px] uppercase tracking-[0.5em] font-sans font-bold text-white/70 mix-blend-difference overflow-hidden">
+              <div className="flex items-center gap-8 text-[9px] md:text-[10px] uppercase tracking-[0.5em] font-sans font-bold text-white/80 drop-shadow-sm overflow-hidden">
                 <motion.span
                   initial={{ y: 20, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
@@ -190,8 +192,8 @@ export default function App() {
                 </motion.span>
               </div>
               <motion.div 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.8, duration: 1 }}
                 className="flex flex-col sm:flex-row gap-6 justify-center items-center"
               >
@@ -329,16 +331,23 @@ export default function App() {
                 transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
                 className="masonry-item"
               >
-                <div className="ig-embed-container flex flex-col shadow-sm border border-gray-50 group bg-white rounded-3xl overflow-hidden">
-                  <div className="relative z-0 p-1">
+                <div className="ig-embed-container flex flex-col group bg-transparent">
+                  <div className="relative z-0">
                     <blockquote 
                       className="instagram-media" 
                       data-instgrm-permalink={product.instagram}
                       data-instgrm-version="14"
                     >
-                      <a href={product.instagram}></a>
                     </blockquote>
                   </div>
+                  <a 
+                    href={product.instagram} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-[10px] uppercase tracking-[0.3em] font-black text-black hover:bg-black hover:text-white transition-all duration-300 mt-4 flex items-center justify-center gap-2 group/btn py-3 border border-black"
+                  >
+                    Comprar en Instagram <ArrowRight size={11} className="transition-transform group-hover/btn:translate-x-1" />
+                  </a>
                 </div>
               </motion.div>
             ))}
@@ -351,7 +360,8 @@ export default function App() {
         <section className="featured-magazine-card bg-zinc-50 py-20 md:py-32 flex flex-col items-center overflow-hidden">
             <div className="max-w-4xl w-full text-center mb-12 md:mb-16 px-6 text-black">
                <span className="editorial-tag mb-6 block w-fit mx-auto">Highlight</span>
-               <h2 className="text-4xl md:text-8xl font-serif tracking-tighter mb-4 leading-tight uppercase">POGUE GIRL OF THE WEEK</h2>
+               <h2 className="text-4xl md:text-8xl font-serif tracking-tighter mb-2 leading-tight uppercase">POGUE GIRL OF THE MONTH</h2>
+               <p className="text-[10px] md:text-xs uppercase tracking-[0.4em] font-bold text-gray-500">Look Destacado</p>
             </div>
             
             <div className="w-full max-w-2xl px-4 relative flex flex-col items-center">
@@ -360,15 +370,22 @@ export default function App() {
                  initial={{ opacity: 0, x: 10 }}
                  animate={{ opacity: 1, x: 0 }}
                  transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-                 className="bg-white p-2 md:p-4 shadow-2xl border border-gray-100 rounded-[2.5rem] md:rounded-[3rem] overflow-hidden w-full"
+                 className="bg-transparent overflow-visible w-full max-w-[420px] mx-auto flex flex-col items-center"
                >
-                  <blockquote 
+                   <blockquote 
                     className="instagram-media" 
                     data-instgrm-permalink={featuredGirlPosts[currentFeaturedIndex]}
                     data-instgrm-version="14"
                   >
-                    <a href={featuredGirlPosts[currentFeaturedIndex]}></a>
                   </blockquote>
+                  <a 
+                    href={featuredGirlPosts[currentFeaturedIndex]} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="bg-black text-white px-10 py-4 text-[11px] uppercase tracking-[0.3em] font-black hover:bg-zinc-800 transition-all mt-10 flex items-center gap-3 group/feat"
+                  >
+                    Comprar en Instagram <ArrowRight size={14} className="transition-transform group-hover/feat:translate-x-1" />
+                  </a>
                </motion.div>
             </div>
         </section>
