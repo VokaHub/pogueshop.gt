@@ -164,7 +164,7 @@ export default function App() {
         <div className="absolute inset-0 z-0">
           <div className="absolute inset-0 bg-black/40 z-10" />
           <img 
-            src="https://raw.githubusercontent.com/VokaHub/pogueshop.gt/main/src/Captura%20de%20pantalla%202026-05-13%20003116.png" 
+            src="https://raw.githubusercontent.com/VokaHub/pogueshop.gt/649cc2b29186483f581dc6602bb8a2b470e81d7d/src/Captura%20de%20pantalla%202026-05-13%20003116.png" 
             alt="Pogue Editorial Background" 
             className="w-full h-full object-cover object-center"
             referrerPolicy="no-referrer"
