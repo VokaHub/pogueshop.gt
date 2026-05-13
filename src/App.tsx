@@ -178,11 +178,11 @@ export default function App() {
             transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
           >
             <span className="text-[10px] md:text-[11px] uppercase tracking-[0.5em] font-bold mb-6 block drop-shadow-md">Ropa y accesorios nuevos</span>
-            <h1 className="text-[18vw] md:text-[15rem] font-serif mb-12 tracking-tighter leading-[0.85] text-white drop-shadow-[0_10px_20px_rgba(0,0,0,0.2)]">
+            <h1 className="text-[18vw] md:text-[14rem] font-serif mb-8 md:mb-12 tracking-tighter leading-[0.85] text-white drop-shadow-[0_10px_20px_rgba(0,0,0,0.3)]">
               POGUE
             </h1>
-            <div className="flex flex-col items-center gap-12">
-              <div className="flex items-center gap-8 text-[9px] md:text-[10px] uppercase tracking-[0.5em] font-sans font-bold text-white/80 drop-shadow-sm overflow-hidden">
+            <div className="flex flex-col items-center gap-16">
+              <div className="flex items-center gap-12 text-[10px] md:text-[11px] uppercase tracking-[0.6em] font-sans font-black text-white/90 drop-shadow-sm overflow-hidden">
                 <motion.span
                   initial={{ y: 20, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
@@ -300,11 +300,14 @@ export default function App() {
       {/* Grid Section */}
       <section id="collection" className="py-20 md:py-32 px-4 md:px-10 max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-baseline mb-12 md:mb-16 border-b border-gray-100 pb-8 gap-4">
-          <div className="flex flex-col gap-2">
-            <h2 className="text-5xl md:text-8xl font-serif tracking-tighter uppercase leading-none">Colección</h2>
-            <p className="text-[10px] md:text-xs uppercase tracking-[0.5em] text-gray-400 font-bold">
-              Pogue Shop Guatemala — {new Intl.DateTimeFormat('es-GT', { month: 'long', year: 'numeric' }).format(new Date())}
-            </p>
+          <div className="flex flex-col gap-4">
+            <h2 className="text-6xl md:text-9xl font-serif tracking-tighter uppercase leading-none">Colección</h2>
+            <div className="flex items-center gap-4">
+               <div className="h-[1px] w-12 bg-black" />
+               <p className="text-[10px] md:text-sm uppercase tracking-[0.5em] text-black font-black">
+                 Guatemala — {new Intl.DateTimeFormat('es-GT', { month: 'long', year: 'numeric' }).format(new Date())}
+               </p>
+            </div>
           </div>
         </div>
 
@@ -344,9 +347,9 @@ export default function App() {
                     href={product.instagram} 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="text-[10px] uppercase tracking-[0.3em] font-black text-black hover:bg-black hover:text-white transition-all duration-300 mt-4 flex items-center justify-center gap-2 group/btn py-3 border border-black"
+                    className="text-[11px] uppercase tracking-[0.4em] font-black text-black hover:bg-black hover:text-white transition-all duration-500 mt-6 flex items-center justify-center gap-3 group/btn py-4 px-6 border-b-2 border-black"
                   >
-                    Comprar en Instagram <ArrowRight size={11} className="transition-transform group-hover/btn:translate-x-1" />
+                    Comprar en Instagram <ArrowRight size={12} className="transition-transform group-hover/btn:translate-x-2" />
                   </a>
                 </div>
               </motion.div>
@@ -378,14 +381,6 @@ export default function App() {
                     data-instgrm-version="14"
                   >
                   </blockquote>
-                  <a 
-                    href={featuredGirlPosts[currentFeaturedIndex]} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="bg-black text-white px-10 py-4 text-[11px] uppercase tracking-[0.3em] font-black hover:bg-zinc-800 transition-all mt-10 flex items-center gap-3 group/feat"
-                  >
-                    Comprar en Instagram <ArrowRight size={14} className="transition-transform group-hover/feat:translate-x-1" />
-                  </a>
                </motion.div>
             </div>
         </section>

@@ -29,57 +29,66 @@ html {
 /* Custom Masonry-like grid using CSS columns */
 .masonry-grid {
   columns: 1;
-  column-gap: 2rem;
+  column-gap: 1.5rem;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 640px) {
   .masonry-grid {
     columns: 2;
-    column-gap: 3rem;
+    column-gap: 2rem;
   }
 }
 
-@media (min-width: 1280px) {
+@media (min-width: 1024px) {
+  .masonry-grid {
+    columns: 2;
+    column-gap: 4rem;
+  }
+}
+
+@media (min-width: 1440px) {
   .masonry-grid {
     columns: 3;
-    column-gap: 4rem;
+    column-gap: 5rem;
   }
 }
 
 .masonry-item {
   break-inside: avoid;
-  margin-bottom: 2rem;
+  margin-bottom: 2.5rem;
   width: 100%;
-  max-width: 420px;
+  max-width: 440px;
   margin-left: auto;
   margin-right: auto;
 }
 
 @media (min-width: 768px) {
   .masonry-item {
-    margin-bottom: 3.5rem;
+    margin-bottom: 5rem;
   }
 }
 
 /* Pinterest-style IG Embed Container */
 .ig-embed-container {
-  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
   backface-visibility: hidden;
-  border-radius: 1rem;
+  border-radius: 0.5rem;
   background: white;
   width: 100%;
   position: relative;
+  border: 1px solid transparent;
 }
 
 @media (min-width: 768px) {
   .ig-embed-container {
-    border-radius: 1.5rem;
+    border-radius: 0;
   }
 }
 
 .ig-embed-container:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 15px 35px -10px rgba(0,0,0,0.08);
+  transform: translateY(-8px);
+  border-color: #f3f4f6;
+  box-shadow: 0 30px 60px -12px rgba(0,0,0,0.05);
 }
 
 .ig-embed-container blockquote {
