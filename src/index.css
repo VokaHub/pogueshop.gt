@@ -53,6 +53,15 @@ html {
   }
 }
 
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 .masonry-item {
   break-inside: avoid;
   margin-bottom: 2.5rem;

@@ -3,8 +3,9 @@ import { motion, AnimatePresence } from 'motion/react';
 import { ShoppingBag, Truck, CreditCard, Star, FileText, Send, ArrowRight, Instagram, ChevronDown } from 'lucide-react';
 
 // Types
-interface Product {
-  instagram: string;
+interface Category {
+  name: string;
+  links: string[];
 }
 
 declare global {
@@ -18,29 +19,18 @@ declare global {
 }
 
 export default function App() {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [featuredGirlPosts, setFeaturedGirlPosts] = useState<string[]>([]);
-  const [currentFeaturedIndex, setCurrentFeaturedIndex] = useState(0);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [featuredPost, setFeaturedPost] = useState<string | null>(null);
+  const [featuredTitle, setFeaturedTitle] = useState<string>("POGUE GIRL");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [scrollProgress, setScrollProgress] = useState(0);
 
   useEffect(() => {
-    const handleScroll = () => {
-      const totalScroll = document.documentElement.scrollHeight - window.innerHeight;
-      const progress = (window.scrollY / totalScroll) * 100;
-      setScrollProgress(progress);
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    fetchSheetData();
   }, []);
 
   useEffect(() => {
-    fetchProducts();
-  }, []);
-
-  useEffect(() => {
-    if (!loading && (products.length > 0 || featuredGirlPosts.length > 0)) {
+    if (!loading && (categories.length > 0 || featuredPost)) {
       const timer = setTimeout(() => {
         if (window.instgrm) {
           window.instgrm.Embeds.process();
@@ -53,10 +43,10 @@ export default function App() {
           };
           document.body.appendChild(script);
         }
-      }, 500);
+      }, 800);
       return () => clearTimeout(timer);
     }
-  }, [loading, products, featuredGirlPosts, currentFeaturedIndex]);
+  }, [loading, categories, featuredPost]);
 
   const [currentReviewIndex, setCurrentReviewIndex] = useState(0);
   const reviews = [
@@ -76,32 +66,46 @@ export default function App() {
     return () => clearInterval(interval);
   }, [reviews.length]);
 
-  const fetchProducts = async () => {
+  const fetchSheetData = async () => {
     try {
       const response = await fetch('https://opensheet.elk.sh/1BgdkuNRPfKdYqG0KdNfBK-hJ0b4hr6qYvVrA-AjBq5o/Hoja%201');
       if (!response.ok) throw new Error('Failed to fetch data');
       const data = await response.json();
       
-      // Products from Column A
-      const productList = data.filter((item: any) => item.instagram).map((item: any) => ({
-        instagram: item.instagram
-      }));
-      setProducts(productList);
-
-      // Featured posts from Column B
-      const otherKeys = data.length > 0 ? Object.keys(data[0]).filter(key => key !== 'instagram') : [];
-      const featuredList: string[] = [];
-      
-      if (otherKeys.length > 0) {
-        const columnBKey = otherKeys[0];
-        data.forEach((item: any) => {
-          const val = item[columnBKey];
-          if (typeof val === 'string' && val.includes('instagram.com')) {
-            featuredList.push(val);
-          }
-        });
+      if (!data || !Array.isArray(data) || data.length === 0) {
+        setLoading(false);
+        return;
       }
-      setFeaturedGirlPosts(featuredList);
+
+      const allKeys = Object.keys(data[0]);
+      
+      const pogueGirlKey = allKeys.find(key => 
+        key.toUpperCase().includes('POGUE GIRL') || 
+        key.toUpperCase().includes('POGUEGIRL')
+      );
+
+      if (pogueGirlKey) {
+        setFeaturedTitle(pogueGirlKey.toUpperCase());
+        const firstValidLink = data.find(row => 
+          row[pogueGirlKey] && typeof row[pogueGirlKey] === 'string' && row[pogueGirlKey].toLowerCase().includes('instagram.com')
+        )?.[pogueGirlKey];
+        setFeaturedPost(firstValidLink || null);
+      } else {
+        setFeaturedPost(null);
+      }
+
+      const parsedCategories: Category[] = allKeys
+        .filter(key => key !== pogueGirlKey)
+        .map(key => {
+          const links = data
+            .map(row => row[key])
+            .filter(link => link && typeof link === 'string' && link.toLowerCase().includes('instagram.com'));
+          
+          return { name: key, links };
+        })
+        .filter(cat => cat.links.length > 0);
+
+      setCategories(parsedCategories);
     } catch (err) {
       console.error(err);
       setError('No se pudo cargar la colección en este momento.');
@@ -110,38 +114,24 @@ export default function App() {
     }
   };
 
+  const scrollToSection = (id: string) => {
+    const element = document.getElementById(id);
+    if (element) {
+      const offset = 120;
+      const bodyRect = document.body.getBoundingClientRect().top;
+      const elementRect = element.getBoundingClientRect().top;
+      const elementPosition = elementRect - bodyRect;
+      const offsetPosition = elementPosition - offset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-white relative">
-      {/* Iconic Meter - Centered at the top */}
-      <div className="fixed top-24 left-0 w-full z-[60] pointer-events-none flex justify-center px-4">
-        <div className="flex items-center gap-3 bg-black/90 backdrop-blur-md text-white px-4 py-2 rounded-full shadow-2xl border border-white/10">
-            <span className="text-[7px] uppercase tracking-[0.3em] font-black opacity-60">Mood:</span>
-            <motion.span
-              key={Math.floor(scrollProgress / 20)}
-              initial={{ opacity: 0, x: -5 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="text-[9px] md:text-[10px] font-serif uppercase tracking-[0.2em] font-bold"
-            >
-              {scrollProgress < 20 && "Basic"}
-              {scrollProgress >= 20 && scrollProgress < 40 && "Chic"}
-              {scrollProgress >= 40 && scrollProgress < 60 && "It Girl"}
-              {scrollProgress >= 60 && scrollProgress < 80 && "Trendy"}
-              {scrollProgress >= 80 && "Pogue Icon"}
-            </motion.span>
-            <div className="w-[1px] h-3 bg-white/20 mx-1" />
-            <span className="text-[9px] font-mono font-bold tabular-nums">
-              {Math.round(scrollProgress)}%
-            </span>
-          </div>
-        </div>
-
-
-      <div className="fixed top-0 left-0 w-full h-[4px] z-[70] bg-gray-50/30">
-        <motion.div 
-          className="h-full bg-black origin-left"
-          style={{ scaleX: scrollProgress / 100 }}
-        />
-      </div>
       {/* Navigation */}
       <nav className="fixed top-0 w-full z-50 bg-white border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-6 md:px-10 h-20 md:h-24 flex items-center justify-between">
@@ -150,14 +140,31 @@ export default function App() {
             <p className="text-[8px] md:text-[9px] uppercase tracking-[0.3em] font-sans text-gray-400 mt-1">Ropa y accesorios Guatemala</p>
           </div>
           <nav className="hidden lg:flex gap-10 text-[10px] uppercase tracking-[0.3em] font-sans font-bold">
-            <a href="#info" className="hover:text-gray-400 transition-colors">Información</a>
-            <a href="#collection" className="hover:text-gray-400 transition-colors">Colección</a>
-            <a href="#reviews" className="hover:text-gray-400 transition-colors">Reseñas</a>
+            <button onClick={() => scrollToSection('info')} className="hover:text-gray-400 transition-colors uppercase cursor-pointer">Información</button>
+            <button onClick={() => scrollToSection('collection')} className="hover:text-gray-400 transition-colors uppercase cursor-pointer">Colección</button>
+            <button onClick={() => scrollToSection('reviews')} className="hover:text-gray-400 transition-colors uppercase cursor-pointer">Reseñas</button>
           </nav>
           <div className="flex items-center gap-6">
           </div>
         </div>
       </nav>
+
+      {/* Category Navigation Bar */}
+      {!loading && categories.length > 1 && (
+        <div className="sticky top-20 md:top-24 z-40 bg-white/95 backdrop-blur-sm border-b border-gray-100 py-4 overflow-x-auto no-scrollbar">
+          <div className="max-w-7xl mx-auto px-6 md:px-10 flex items-center justify-center gap-6 md:gap-10 whitespace-nowrap">
+            {categories.map((category) => (
+              <button
+                key={category.name}
+                onClick={() => scrollToSection(`category-${category.name.replace(/\s+/g, '-').toLowerCase()}`)}
+                className="text-[9px] md:text-[10px] uppercase tracking-[0.3em] font-black text-gray-400 hover:text-black transition-colors cursor-pointer"
+              >
+                {category.name}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Hero Section */}
       <section className="relative h-[85vh] md:h-screen flex items-center justify-center overflow-hidden border-b border-gray-100">
@@ -197,20 +204,20 @@ export default function App() {
                 transition={{ delay: 0.8, duration: 1 }}
                 className="flex flex-col sm:flex-row gap-6 justify-center items-center"
               >
-                <a 
-                  href="#collection" 
-                  className="bg-white text-black px-14 py-5 text-[10px] uppercase tracking-[0.3em] font-black hover:bg-zinc-100 transition-all shadow-2xl active:scale-95"
+                <button 
+                  onClick={() => scrollToSection('collection')}
+                  className="bg-white text-black px-14 py-5 text-[10px] uppercase tracking-[0.3em] font-black hover:bg-zinc-100 transition-all shadow-2xl active:scale-95 cursor-pointer"
                 >
                   Ver Colección
-                </a>
+                </button>
               </motion.div>
             </div>
           </motion.div>
         </div>
       </section>
 
-      {/* Info Section - Editorial Cards */}
-      <section id="info" className="py-20 md:py-32 bg-white">
+      {/* Info Section */}
+      <section id="info" className="py-20 md:py-32 bg-white border-t border-gray-50">
         <div className="max-w-7xl mx-auto px-6 md:px-10">
           <div className="mb-16 md:mb-24">
              <h2 className="text-5xl md:text-6xl font-serif tracking-tighter mb-6 text-center uppercase">Servicios & Guía</h2>
@@ -296,7 +303,6 @@ export default function App() {
         </div>
       </section>
 
-
       {/* Grid Section */}
       <section id="collection" className="py-20 md:py-32 px-4 md:px-10 max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-baseline mb-12 md:mb-16 border-b border-gray-100 pb-8 gap-4">
@@ -324,60 +330,76 @@ export default function App() {
             <p className="text-[10px] uppercase tracking-[0.6em] text-gray-300 font-bold animate-pulse">Cargando Archivo</p>
           </div>
         ) : (
-          <div className="masonry-grid px-2 md:px-0">
-            {products.map((product, index) => (
-              <motion.div 
-                key={index}
-                initial={{ opacity: 0, scale: 0.95 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true, margin: "-50px" }}
-                transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-                className="masonry-item"
+          <div className="space-y-32">
+            {categories.map((category) => (
+              <div 
+                key={category.name} 
+                id={`category-${category.name.replace(/\s+/g, '-').toLowerCase()}`}
+                className="scroll-mt-32"
               >
-                <div className="ig-embed-container flex flex-col group bg-transparent">
-                  <div className="relative z-0">
-                    <blockquote 
-                      className="instagram-media" 
-                      data-instgrm-permalink={product.instagram}
-                      data-instgrm-version="14"
-                    >
-                    </blockquote>
-                  </div>
-                  <a 
-                    href={product.instagram} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="text-[11px] uppercase tracking-[0.4em] font-black text-black hover:bg-black hover:text-white transition-all duration-500 mt-6 flex items-center justify-center gap-3 group/btn py-4 px-6 border-b-2 border-black"
-                  >
-                    Comprar en Instagram <ArrowRight size={12} className="transition-transform group-hover/btn:translate-x-2" />
-                  </a>
+                <div className="mb-12 md:mb-20">
+                  <span className="editorial-tag mb-4 inline-block">Collection</span>
+                  <h3 className="text-4xl md:text-7xl font-serif tracking-tighter uppercase mb-4">{category.name}</h3>
+                  <div className="h-[1px] w-24 bg-black" />
                 </div>
-              </motion.div>
+                
+                <div className="masonry-grid px-2 md:px-0">
+                  {category.links.map((link, index) => (
+                    <motion.div 
+                      key={index}
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      whileInView={{ opacity: 1, scale: 1 }}
+                      viewport={{ once: true, margin: "-50px" }}
+                      transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                      className="masonry-item"
+                    >
+                      <div className="ig-embed-container flex flex-col group bg-transparent">
+                        <div className="relative z-0">
+                          <blockquote 
+                            className="instagram-media" 
+                            data-instgrm-permalink={link}
+                            data-instgrm-version="14"
+                          >
+                          </blockquote>
+                        </div>
+                        <a 
+                          href={link} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-[11px] uppercase tracking-[0.4em] font-black text-black hover:bg-black hover:text-white transition-all duration-500 mt-6 flex items-center justify-center gap-3 group/btn py-4 px-6 border-b-2 border-black"
+                        >
+                          Comprar en Instagram <ArrowRight size={12} className="transition-transform group-hover/btn:translate-x-2" />
+                        </a>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
             ))}
           </div>
         )}
       </section>
 
-      {/* Featured Section - Pogue Girl Carousel */}
-      {featuredGirlPosts.length > 0 && (
+      {/* Featured Section - Pogue Girl */}
+      {featuredPost && (
         <section className="featured-magazine-card bg-zinc-50 py-20 md:py-32 flex flex-col items-center overflow-hidden">
             <div className="max-w-4xl w-full text-center mb-12 md:mb-16 px-6 text-black">
                <span className="editorial-tag mb-6 block w-fit mx-auto">Highlight</span>
-               <h2 className="text-4xl md:text-8xl font-serif tracking-tighter mb-2 leading-tight uppercase">POGUE GIRL OF THE MONTH</h2>
+               <h2 className="text-4xl md:text-8xl font-serif tracking-tighter mb-2 leading-tight uppercase">{featuredTitle}</h2>
                <p className="text-[10px] md:text-xs uppercase tracking-[0.4em] font-bold text-gray-500">Look Destacado</p>
             </div>
             
             <div className="w-full max-w-2xl px-4 relative flex flex-col items-center">
                <motion.div 
-                 key={currentFeaturedIndex}
-                 initial={{ opacity: 0, x: 10 }}
-                 animate={{ opacity: 1, x: 0 }}
+                 initial={{ opacity: 0, y: 10 }}
+                 whileInView={{ opacity: 1, y: 0 }}
+                 viewport={{ once: true }}
                  transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
                  className="bg-transparent overflow-visible w-full max-w-[420px] mx-auto flex flex-col items-center"
                >
                    <blockquote 
                     className="instagram-media" 
-                    data-instgrm-permalink={featuredGirlPosts[currentFeaturedIndex]}
+                    data-instgrm-permalink={featuredPost}
                     data-instgrm-version="14"
                   >
                   </blockquote>
@@ -386,8 +408,8 @@ export default function App() {
         </section>
       )}
 
-      {/* Final Sections */}
-      <section id="reviews" className="pt-8 pb-16 md:pt-16 md:pb-32 bg-white">
+      {/* Final Sections - Reviews first, then Info */}
+      <section id="reviews" className="pt-20 pb-20 md:pt-32 md:pb-32 bg-white border-b border-gray-50">
         <div className="max-w-7xl mx-auto px-6 md:px-10">
           <div className="max-w-3xl mx-auto flex flex-col items-center text-center">
             
@@ -431,7 +453,6 @@ export default function App() {
         </div>
       </section>
 
-
       {/* Footer */}
       <footer className="py-16 md:py-24 border-t border-gray-100 bg-white">
         <div className="max-w-7xl mx-auto px-6 md:px-10 flex flex-col md:flex-row justify-between items-center gap-12">
@@ -440,9 +461,9 @@ export default function App() {
              <p className="text-[9px] uppercase tracking-[0.4em] text-gray-400 font-bold">Ropa y accesorios Guatemala</p>
           </div>
           <div className="flex gap-12 text-[10px] uppercase tracking-widest font-sans font-bold text-gray-900">
-             <a href="https://www.instagram.com/pogueshop.gt/" className="hover:text-gray-400 transition-colors flex items-center gap-2">
-               <Instagram size={14} /> POGUESHOP.GT
-             </a>
+            <a href="https://www.instagram.com/pogueshop.gt/" className="hover:text-gray-400 transition-colors flex items-center gap-2">
+              <Instagram size={14} /> POGUESHOP.GT
+            </a>
           </div>
           <div className="text-[9px] uppercase tracking-[0.3em] text-gray-300 font-bold">
             POGUESHOP.GT · CIUDAD DE GUATEMALA
