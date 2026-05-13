@@ -42,7 +42,7 @@ html {
 .masonry-item {
   break-inside: avoid;
   margin-bottom: 2.5rem;
-  max-width: 360px;
+  max-width: 420px;
   margin-left: auto;
   margin-right: auto;
   width: 100%;
@@ -51,6 +51,7 @@ html {
 @media (min-width: 768px) {
   .masonry-item {
     margin-bottom: 4rem;
+    max-width: 360px;
   }
 }
 
@@ -83,30 +84,7 @@ html {
   box-shadow: none !important;
 }
 
-/* Factor in some mobile padding for info blocks */
-.info-block {
-  border-left: 1px solid #f3f4f6;
-  padding-left: 1.5rem;
-  padding-top: 1rem;
-  padding-bottom: 1rem;
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-@media (min-width: 768px) {
-  .info-block {
-    padding-left: 2rem;
-    padding-top: 0;
-    padding-bottom: 0;
-  }
-}
-
-@media (hover: hover) {
-  .info-block:hover {
-    border-left-color: black;
-    transform: translateX(4px);
-  }
-}
-
+/* Editorial Styles */
 .editorial-header {
   font-family: inherit;
   font-size: 0.65rem;
@@ -130,15 +108,39 @@ html {
   border-radius: 2px;
 }
 
-/* Pogue Girl Section */
+/* Info Section Block */
+.info-block {
+  border-left: 1px solid #f3f4f6;
+  padding-left: 1.5rem;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (min-width: 768px) {
+  .info-block {
+    padding-left: 2rem;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+}
+
+@media (hover: hover) {
+  .info-block:hover {
+    border-left-color: black;
+    transform: translateX(4px);
+  }
+}
+
+/* Featured Section */
 .featured-magazine-card {
   background: linear-gradient(to bottom, #ffffff, #fafafa, #ffffff);
-  padding: 2rem 1.5rem;
+  padding: 4rem 1.5rem;
 }
 
 @media (min-width: 768px) {
   .featured-magazine-card {
-    padding: 4rem 4rem;
+    padding: 8rem 4rem;
   }
 }
 

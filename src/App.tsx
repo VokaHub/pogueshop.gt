@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { ShoppingBag, Truck, CreditCard, Star, FileText, Send, ArrowRight, Instagram, ChevronDown } from 'lucide-react';
 
 // Types
@@ -23,6 +23,17 @@ export default function App() {
   const [currentFeaturedIndex, setCurrentFeaturedIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [scrollProgress, setScrollProgress] = useState(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const totalScroll = document.documentElement.scrollHeight - window.innerHeight;
+      const progress = (window.scrollY / totalScroll) * 100;
+      setScrollProgress(progress);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   useEffect(() => {
     fetchProducts();
@@ -46,6 +57,24 @@ export default function App() {
       return () => clearTimeout(timer);
     }
   }, [loading, products, featuredGirlPosts, currentFeaturedIndex]);
+
+  const [currentReviewIndex, setCurrentReviewIndex] = useState(0);
+  const reviews = [
+    "Muchas gracias, ya tengo mi pedido, está muy bonito los vestidos, muchas gracias.",
+    "El otro día, recibí el paquete, muchas gracias, está divino.",
+    "Gracias a ustedes por el buen servicio, 100% recomendada la página.",
+    "Está super lindo todo.",
+    "Me encantó el vestido, me quedó hermoso y gracias por mi regalito.",
+    "Ya recibí mi pedido, muchas gracias por el detallito, sin duda seguiré pidiendo más cositas.",
+    "Yo recibí mi pedido, muchísimas gracias, todo muy lindo y gracias por el detalle, está hermoso."
+  ];
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentReviewIndex((prev) => (prev === reviews.length - 1 ? 0 : prev + 1));
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [reviews.length]);
 
   const fetchProducts = async () => {
     try {
@@ -82,7 +111,37 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white relative">
+      {/* Iconic Meter - Centered at the top */}
+      <div className="fixed top-24 left-0 w-full z-[60] pointer-events-none flex justify-center px-4">
+        <div className="flex items-center gap-3 bg-black/90 backdrop-blur-md text-white px-4 py-2 rounded-full shadow-2xl border border-white/10">
+            <span className="text-[7px] uppercase tracking-[0.3em] font-black opacity-60">Mood:</span>
+            <motion.span
+              key={Math.floor(scrollProgress / 20)}
+              initial={{ opacity: 0, x: -5 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="text-[9px] md:text-[10px] font-serif uppercase tracking-[0.2em] font-bold"
+            >
+              {scrollProgress < 20 && "Basic"}
+              {scrollProgress >= 20 && scrollProgress < 40 && "Chic"}
+              {scrollProgress >= 40 && scrollProgress < 60 && "It Girl"}
+              {scrollProgress >= 60 && scrollProgress < 80 && "Trendy"}
+              {scrollProgress >= 80 && "Pogue Icon"}
+            </motion.span>
+            <div className="w-[1px] h-3 bg-white/20 mx-1" />
+            <span className="text-[9px] font-mono font-bold tabular-nums">
+              {Math.round(scrollProgress)}%
+            </span>
+          </div>
+        </div>
+
+
+      <div className="fixed top-0 left-0 w-full h-[4px] z-[70] bg-gray-50/30">
+        <motion.div 
+          className="h-full bg-black origin-left"
+          style={{ scaleX: scrollProgress / 100 }}
+        />
+      </div>
       {/* Navigation */}
       <nav className="fixed top-0 w-full z-50 bg-white border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-6 md:px-10 h-20 md:h-24 flex items-center justify-between">
@@ -190,13 +249,14 @@ export default function App() {
             <div className="info-block">
               <span className="editorial-header">03 / Calidad</span>
               <div className="space-y-6">
-                <h4 className="text-2xl font-serif italic text-gray-900 leading-tight">Estado de prendas</h4>
+                <h4 className="text-2xl font-serif italic text-gray-900 leading-tight">Guía de estados</h4>
                 <div className="space-y-4 text-[10px] uppercase tracking-[0.2em] text-gray-600 leading-relaxed">
-                  <p>• <span className="text-black font-bold">10/10:</span> Condición impecable.</p>
-                  <p>• <span className="text-black font-bold">Nuevas:</span> Con o sin etiquetas originales.</p>
+                  <p>• <span className="text-black font-bold">10 de 10:</span> Segunda mano en buen estado.</p>
+                  <p>• <span className="text-black font-bold">Nuevo con etiqueta:</span> No usado, con etiqueta original.</p>
+                  <p>• <span className="text-black font-bold">Nuevo sin etiqueta:</span> No usado, sin etiqueta original.</p>
                   <div className="pt-6 mt-6 border-t border-gray-100 flex items-start gap-4">
                      <FileText className="text-gray-200" size={24} />
-                     <p className="text-[9px] text-gray-400 normal-case italic">Toda prenda es rigurosamente seleccionada, lavada y sanitizada previo a la venta.</p>
+                     <p className="text-[9px] text-gray-400 normal-case italic">Cada pieza es seleccionada y sanitizada meticulosamente antes de ser entregada.</p>
                   </div>
                 </div>
               </div>
@@ -238,8 +298,12 @@ export default function App() {
       {/* Grid Section */}
       <section id="collection" className="py-20 md:py-32 px-4 md:px-10 max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-baseline mb-12 md:mb-16 border-b border-gray-100 pb-8 gap-4">
-          <h2 className="text-5xl md:text-7xl font-serif tracking-tighter uppercase">Colección</h2>
-          <span className="text-[10px] uppercase tracking-[0.5em] text-gray-400 font-bold">Shop GT Archive</span>
+          <div className="flex flex-col gap-2">
+            <h2 className="text-5xl md:text-8xl font-serif tracking-tighter uppercase leading-none">Colección</h2>
+            <p className="text-[10px] md:text-xs uppercase tracking-[0.5em] text-gray-400 font-bold">
+              Pogue Shop Guatemala — {new Intl.DateTimeFormat('es-GT', { month: 'long', year: 'numeric' }).format(new Date())}
+            </p>
+          </div>
         </div>
 
         {loading ? (
@@ -259,31 +323,14 @@ export default function App() {
             {products.map((product, index) => (
               <motion.div 
                 key={index}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-100px" }}
-                transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+                initial={{ opacity: 0, scale: 0.95 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
                 className="masonry-item"
               >
-                <div className="ig-embed-container flex flex-col shadow-sm border border-gray-50 group">
-                  {/* Shop Button Overlay - Visible on Mobile, Hover on Desktop */}
-                  <a 
-                    href={product.instagram} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="absolute top-4 right-4 z-30 md:opacity-0 md:group-hover:opacity-100 transition-all duration-500 bg-black text-white p-3.5 rounded-full shadow-xl hover:bg-zinc-800 active:scale-95"
-                    aria-label="Ver en Instagram"
-                  >
-                    <ShoppingBag className="w-5 h-5 md:w-6 md:h-6" />
-                  </a>
- 
-                  {/* Floating 'Shop' Label */}
-                  <div className="absolute top-4 left-4 z-30 md:opacity-0 md:group-hover:opacity-100 transition-all duration-500 pointer-events-none">
-                     <span className="text-[8px] md:text-[9px] uppercase tracking-[0.2em] bg-white text-black px-4 py-2 rounded-full font-bold shadow-sm border border-gray-100">Shop Item</span>
-                  </div>
- 
-                  {/* Pinterest-style Frame for IG Embed */}
-                  <div className="relative z-0">
+                <div className="ig-embed-container flex flex-col shadow-sm border border-gray-50 group bg-white rounded-3xl overflow-hidden">
+                  <div className="relative z-0 p-1">
                     <blockquote 
                       className="instagram-media" 
                       data-instgrm-permalink={product.instagram}
@@ -299,47 +346,21 @@ export default function App() {
         )}
       </section>
 
-      {/* Featured Section - Pogue Girl of the Week Carousel */}
+      {/* Featured Section - Pogue Girl Carousel */}
       {featuredGirlPosts.length > 0 && (
-        <section className="featured-magazine-card bg-zinc-50 py-16 md:py-32 flex flex-col items-center overflow-hidden">
-            <div className="max-w-4xl w-full text-center mb-12 md:mb-24 px-4 text-black">
-               <span className="editorial-tag mb-6">Exclusive Highlight</span>
-               <h2 className="text-4xl md:text-8xl font-serif tracking-tighter leading-tight md:leading-none uppercase">POGUE GIRL OF THE WEEK</h2>
+        <section className="featured-magazine-card bg-zinc-50 py-20 md:py-32 flex flex-col items-center overflow-hidden">
+            <div className="max-w-4xl w-full text-center mb-12 md:mb-16 px-6 text-black">
+               <span className="editorial-tag mb-6 block w-fit mx-auto">Highlight</span>
+               <h2 className="text-4xl md:text-8xl font-serif tracking-tighter mb-4 leading-tight uppercase">POGUE GIRL OF THE WEEK</h2>
             </div>
             
-            <div className="w-full max-w-2xl px-6 relative">
-               <div className="flex items-center justify-center gap-4 mb-8 md:absolute md:-left-20 md:top-1/2 md:translate-y-1/2 md:flex-col md:mb-0 z-40">
-                  <button 
-                    onClick={() => setCurrentFeaturedIndex(prev => (prev === 0 ? featuredGirlPosts.length - 1 : prev - 1))}
-                    className="p-3 bg-white hover:bg-black hover:text-white transition-all rounded-full shadow-lg active:scale-90"
-                    aria-label="Anterior"
-                  >
-                    <ArrowRight className="rotate-180 w-5 h-5" />
-                  </button>
-                  <div className="flex md:flex-col gap-2">
-                    {featuredGirlPosts.map((_, i) => (
-                      <div 
-                        key={i} 
-                        className={`w-1.5 h-1.5 rounded-full transition-all ${i === currentFeaturedIndex ? 'bg-black w-4 md:w-1.5 md:h-4' : 'bg-gray-200'}`} 
-                      />
-                    ))}
-                  </div>
-                  <button 
-                    onClick={() => setCurrentFeaturedIndex(prev => (prev === featuredGirlPosts.length - 1 ? 0 : prev + 1))}
-                    className="p-3 bg-white hover:bg-black hover:text-white transition-all rounded-full shadow-lg active:scale-90"
-                    aria-label="Siguiente"
-                  >
-                    <ArrowRight className="w-5 h-5" />
-                  </button>
-               </div>
-
+            <div className="w-full max-w-2xl px-4 relative flex flex-col items-center">
                <motion.div 
                  key={currentFeaturedIndex}
-                 initial={{ opacity: 0, x: 20 }}
+                 initial={{ opacity: 0, x: 10 }}
                  animate={{ opacity: 1, x: 0 }}
-                 exit={{ opacity: 0, x: -20 }}
-                 transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                 className="bg-white p-2 md:p-4 shadow-3xl border border-gray-100 rounded-[2rem] md:rounded-[3rem] overflow-hidden"
+                 transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                 className="bg-white p-2 md:p-4 shadow-2xl border border-gray-100 rounded-[2.5rem] md:rounded-[3rem] overflow-hidden w-full"
                >
                   <blockquote 
                     className="instagram-media" 
@@ -362,16 +383,37 @@ export default function App() {
             <div className="hidden lg:block"></div>
 
             {/* Reviews Space */}
-            <div className="border-t lg:border-t-0 lg:border-l border-gray-100 pt-20 lg:pt-0 lg:pl-20">
+            <div className="border-t lg:border-t-0 lg:border-l border-gray-100 pt-20 lg:pt-0 lg:pl-20 min-h-[300px] flex flex-col">
                <h3 className="text-[10px] uppercase tracking-[0.4em] font-sans font-bold text-gray-400 mb-8 md:mb-12">Reseñas</h3>
-               <div className="space-y-12">
-                  <div className="space-y-4">
-                     <p className="text-lg md:text-xl font-serif italic text-gray-700 leading-snug">"¡Súper recomendado! La ropa llegó súper limpia y el estado era tal cual lo describieron."</p>
-                     <p className="text-[10px] uppercase tracking-widest text-zinc-300 font-bold">Cliente Pogue</p>
-                  </div>
-                  <div className="space-y-4">
-                     <p className="text-lg md:text-xl font-serif italic text-gray-700 leading-snug">"Excelente servicio al cliente y el envío fue súper rápido a mi departamento."</p>
-                     <p className="text-[10px] uppercase tracking-widest text-zinc-300 font-bold">Cliente Pogue</p>
+               <div className="relative flex-1">
+                  <AnimatePresence mode="wait">
+                    <motion.div 
+                      key={currentReviewIndex}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                      className="space-y-6"
+                    >
+                       <p className="text-xl md:text-2xl font-serif italic text-gray-700 leading-tight">
+                        "{reviews[currentReviewIndex]}"
+                       </p>
+                       <div className="flex items-center gap-4">
+                          <div className="h-[1px] w-8 bg-zinc-200" />
+                          <p className="text-[10px] uppercase tracking-widest text-zinc-300 font-bold">Cliente Pogue</p>
+                       </div>
+                    </motion.div>
+                  </AnimatePresence>
+
+                  <div className="absolute bottom-0 left-0 flex gap-2 pt-12">
+                    {reviews.map((_, i) => (
+                      <button
+                        key={i}
+                        onClick={() => setCurrentReviewIndex(i)}
+                        className={`h-1 transition-all duration-500 rounded-full ${i === currentReviewIndex ? 'bg-black w-6' : 'bg-gray-100 w-2'}`}
+                        aria-label={`Ir a reseña ${i + 1}`}
+                      />
+                    ))}
                   </div>
                </div>
             </div>
