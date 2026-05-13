@@ -389,40 +389,38 @@ export default function App() {
       {/* Final Sections */}
       <section id="reviews" className="pt-8 pb-16 md:pt-16 md:pb-32 bg-white">
         <div className="max-w-7xl mx-auto px-6 md:px-10">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 md:gap-32">
+          <div className="max-w-3xl mx-auto flex flex-col items-center text-center">
             
-            {/* Left side empty for editorial balance */}
-            <div className="hidden lg:block"></div>
-
             {/* Reviews Space */}
-            <div className="border-t lg:border-t-0 lg:border-l border-gray-100 pt-20 lg:pt-0 lg:pl-20 min-h-[300px] flex flex-col">
+            <div className="w-full min-h-[300px] flex flex-col items-center">
                <h3 className="text-[10px] uppercase tracking-[0.4em] font-sans font-bold text-gray-400 mb-8 md:mb-12">Reseñas</h3>
-               <div className="relative flex-1">
+               <div className="relative w-full flex-1 flex flex-col items-center">
                   <AnimatePresence mode="wait">
                     <motion.div 
                       key={currentReviewIndex}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -20 }}
+                      initial={{ opacity: 0, scale: 0.98 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 1.02 }}
                       transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-                      className="space-y-6"
+                      className="space-y-8 flex flex-col items-center"
                     >
-                       <p className="text-xl md:text-2xl font-serif italic text-gray-700 leading-tight">
+                       <p className="text-2xl md:text-4xl font-serif italic text-gray-700 leading-tight max-w-2xl px-4">
                         "{reviews[currentReviewIndex]}"
                        </p>
-                       <div className="flex items-center gap-4">
-                          <div className="h-[1px] w-8 bg-zinc-200" />
-                          <p className="text-[10px] uppercase tracking-widest text-zinc-300 font-bold">Cliente Pogue</p>
+                       <div className="flex items-center justify-center gap-6">
+                          <div className="h-[1px] w-12 bg-zinc-100" />
+                          <p className="text-[10px] md:text-[11px] uppercase tracking-[0.4em] text-zinc-300 font-bold">Cliente Pogue</p>
+                          <div className="h-[1px] w-12 bg-zinc-100" />
                        </div>
                     </motion.div>
                   </AnimatePresence>
 
-                  <div className="absolute bottom-0 left-0 flex gap-2 pt-12">
+                  <div className="flex justify-center gap-2 pt-16 md:pt-20">
                     {reviews.map((_, i) => (
                       <button
                         key={i}
                         onClick={() => setCurrentReviewIndex(i)}
-                        className={`h-1 transition-all duration-500 rounded-full ${i === currentReviewIndex ? 'bg-black w-6' : 'bg-gray-100 w-2'}`}
+                        className={`h-1.5 transition-all duration-500 rounded-full ${i === currentReviewIndex ? 'bg-black w-8' : 'bg-gray-100 w-3 hover:bg-gray-200'}`}
                         aria-label={`Ir a reseña ${i + 1}`}
                       />
                     ))}
