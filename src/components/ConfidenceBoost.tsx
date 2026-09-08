@@ -1,6 +1,6 @@
-import { useState, useEffect, type MouseEvent } from 'react';
+import { useState, useEffect, useRef, type MouseEvent } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, ExternalLink, ArrowLeft } from 'lucide-react';
+import { X, ExternalLink, ArrowLeft, Volume2, VolumeX } from 'lucide-react';
 
 interface Bubble {
   id: number;
@@ -64,13 +64,33 @@ export function ConfidenceBoostModal({ isOpen, onClose, canvaCatalogUrl }: Confi
   // No quote shown until first pop!
   const [currentQuote, setCurrentQuote] = useState<string | null>(null);
   const [lastPoppedPosition, setLastPoppedPosition] = useState<{ x: number; y: number } | null>(null);
+  const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
+  const audioCtxRef = useRef<AudioContext | null>(null);
 
-  // Pop sound via Web Audio API (always on)
-  const playPopSound = () => {
+  const getAudioContext = () => {
     try {
-      const AudioCtxClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-      if (!AudioCtxClass) return;
-      const audioCtx = new AudioCtxClass();
+      if (!audioCtxRef.current) {
+        const AudioCtxClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+        if (AudioCtxClass) {
+          audioCtxRef.current = new AudioCtxClass();
+        }
+      }
+      if (audioCtxRef.current && audioCtxRef.current.state === 'suspended') {
+        audioCtxRef.current.resume();
+      }
+      return audioCtxRef.current;
+    } catch {
+      return null;
+    }
+  };
+
+  // Pop sound via Web Audio API with mobile resume
+  const playPopSound = () => {
+    if (!soundEnabled) return;
+    try {
+      const audioCtx = getAudioContext();
+      if (!audioCtx) return;
+
       const osc = audioCtx.createOscillator();
       const gain = audioCtx.createGain();
 
@@ -79,7 +99,7 @@ export function ConfidenceBoostModal({ isOpen, onClose, canvaCatalogUrl }: Confi
       osc.frequency.setValueAtTime(340, now);
       osc.frequency.exponentialRampToValueAtTime(840, now + 0.07);
 
-      gain.gain.setValueAtTime(0.28, now);
+      gain.gain.setValueAtTime(0.3, now);
       gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
 
       osc.connect(gain);
@@ -90,6 +110,33 @@ export function ConfidenceBoostModal({ isOpen, onClose, canvaCatalogUrl }: Confi
     } catch {
       // Audio fallback
     }
+  };
+
+  const toggleSound = () => {
+    setSoundEnabled(prev => {
+      const next = !prev;
+      if (next) {
+        // Unlock audio context on mobile tap
+        const ctx = getAudioContext();
+        if (ctx) {
+          try {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(520, ctx.currentTime);
+            gain.gain.setValueAtTime(0.18, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(ctx.currentTime);
+            osc.stop(ctx.currentTime + 0.08);
+          } catch {
+            // fallback
+          }
+        }
+      }
+      return next;
+    });
   };
 
   const resetBubbles = () => {
@@ -198,9 +245,26 @@ export function ConfidenceBoostModal({ isOpen, onClose, canvaCatalogUrl }: Confi
 
           {/* Unified Top Area: Instruction & Large Revealed Quote (No visible dividers) */}
           <div className="relative z-30 w-full px-6 max-w-4xl mx-auto pt-1 pb-3 text-center pointer-events-none flex-shrink-0">
-            <p className="text-[9px] md:text-[10px] uppercase tracking-[0.35em] text-gray-400 font-sans font-semibold mb-2">
-              Haz pop haciendo clic
-            </p>
+            <div className="inline-flex items-center justify-center gap-2.5 mb-2 pointer-events-auto">
+              <span className="text-[9px] md:text-[10px] uppercase tracking-[0.35em] text-gray-400 font-sans font-semibold">
+                Haz pop haciendo clic
+              </span>
+              <span className="text-gray-300 text-[10px] select-none">•</span>
+              <button
+                type="button"
+                onClick={toggleSound}
+                className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border transition-all text-[8px] md:text-[9px] uppercase tracking-[0.2em] font-sans font-bold cursor-pointer active:scale-95 ${
+                  soundEnabled
+                    ? 'border-gray-300 bg-white text-black shadow-xs hover:border-black'
+                    : 'border-transparent bg-gray-100 text-gray-400 hover:text-gray-600'
+                }`}
+                title={soundEnabled ? "Desactivar sonido" : "Activar sonido"}
+                aria-label={soundEnabled ? "Desactivar sonido" : "Activar sonido"}
+              >
+                {soundEnabled ? <Volume2 size={11} /> : <VolumeX size={11} />}
+                <span>{soundEnabled ? 'sound on' : 'sound off'}</span>
+              </button>
+            </div>
 
             {/* Revealed Quote Display - Only appears upon first pop */}
             <div className="min-h-[75px] md:min-h-[105px] flex items-center justify-center">

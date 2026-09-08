@@ -111,26 +111,23 @@ export default function App() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
           >
-            <span className="text-[10px] md:text-[11px] uppercase tracking-[0.5em] font-bold mb-6 block drop-shadow-md">
-              Ropa y accesorios nuevos
-            </span>
-            <h1 className="text-[18vw] md:text-[14rem] font-serif mb-8 md:mb-12 tracking-tighter leading-[0.85] text-white drop-shadow-[0_10px_20px_rgba(0,0,0,0.3)]">
+            <h1 className="text-[18vw] md:text-[14rem] font-serif mb-6 md:mb-8 tracking-tighter leading-[0.85] text-white drop-shadow-[0_10px_20px_rgba(0,0,0,0.3)]">
               POGUE
             </h1>
-            <div className="flex flex-col items-center gap-16">
-              <div className="flex items-center gap-12 text-[10px] md:text-[11px] uppercase tracking-[0.6em] font-sans font-black text-white/90 drop-shadow-sm overflow-hidden">
+            <div className="flex flex-col items-center gap-8 md:gap-10">
+              <div className="flex items-center text-[10px] md:text-[11px] uppercase tracking-[0.45em] font-sans font-bold text-white/90 drop-shadow-sm overflow-hidden">
                 <motion.span
-                  initial={{ y: 20, opacity: 0 }}
+                  initial={{ y: 15, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.5, duration: 0.8 }}
+                  transition={{ delay: 0.4, duration: 0.8 }}
                 >
-                  Support Local Business
+                  Your favorite local business
                 </motion.span>
               </div>
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.8, duration: 0.8 }}
+                transition={{ delay: 0.6, duration: 0.8 }}
                 className="flex flex-col items-center gap-3 justify-center"
               >
                 {/* Ver Catálogo - Sleek, refined proportion */}
