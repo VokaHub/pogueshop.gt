@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence, useScroll, useTransform } from 'motion/react';
 import { ArrowRight, Instagram, ExternalLink, FileText } from 'lucide-react';
 import { ConfidenceBoostModal, GiftEnvelopeSection } from './components/ConfidenceBoost';
 
@@ -11,6 +11,10 @@ const INSTAGRAM_PROFILE_URL = 'https://www.instagram.com/pogueshop.gt/';
 export default function App() {
   const [isConfidenceBoostOpen, setIsConfidenceBoostOpen] = useState(false);
   const [currentReviewIndex, setCurrentReviewIndex] = useState(0);
+
+  // Subtle Parallax effect on Hero background image
+  const { scrollY } = useScroll();
+  const heroBgY = useTransform(scrollY, [0, 800], [0, 140]);
   const reviews = [
     'Muchas gracias, ya tengo mi pedido, está muy bonito los vestidos, muchas gracias.',
     'El otro día, recibí el paquete, muchas gracias, está divino.',
@@ -95,12 +99,13 @@ export default function App() {
 
       {/* Hero Section */}
       <section className="relative h-[85vh] md:h-screen flex items-center justify-center overflow-hidden border-b border-gray-100">
-        <div className="absolute inset-0 z-0">
+        <div className="absolute inset-0 z-0 overflow-hidden">
           <div className="absolute inset-0 bg-black/40 z-10" />
-          <img
+          <motion.img
+            style={{ y: heroBgY, scale: 1.08 }}
             src="https://raw.githubusercontent.com/VokaHub/pogueshop.gt/649cc2b29186483f581dc6602bb8a2b470e81d7d/src/Captura%20de%20pantalla%202026-05-13%20003116.png"
             alt="Pogue Editorial Background"
-            className="w-full h-full object-cover object-center"
+            className="w-full h-full object-cover object-center will-change-transform"
             referrerPolicy="no-referrer"
           />
         </div>

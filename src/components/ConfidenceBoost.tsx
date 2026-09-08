@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, type MouseEvent } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, ExternalLink, ArrowLeft, Zap } from 'lucide-react';
+import { X, ExternalLink, ArrowLeft, Pointer } from 'lucide-react';
 
 interface Bubble {
   id: number;
@@ -332,14 +332,14 @@ export function ConfidenceBoostModal({ isOpen, onClose, canvaCatalogUrl }: Confi
             </div>
           </header>
 
-          {/* Unified Top Area: Instruction (Centered) & Large Revealed Quote */}
-          <div className="relative z-30 w-full px-6 max-w-4xl mx-auto pt-2 pb-3 text-center pointer-events-none flex-shrink-0">
+          {/* Unified Top Area: Instruction, Revealed Quote & Progress Bar directly below phrase */}
+          <div className="relative z-30 w-full px-6 max-w-4xl mx-auto pt-2 pb-2 text-center pointer-events-none flex-shrink-0 flex flex-col items-center">
             <p className="text-[10px] md:text-[11px] uppercase tracking-[0.38em] text-gray-400 font-sans font-bold mb-2">
               Haz pop haciendo clic
             </p>
 
             {/* Revealed Quote Display - Only appears upon first pop */}
-            <div className="min-h-[75px] md:min-h-[105px] flex items-center justify-center">
+            <div className="min-h-[65px] md:min-h-[85px] flex items-center justify-center">
               <AnimatePresence mode="wait">
                 {currentQuote && (
                   <motion.h2
@@ -354,6 +354,17 @@ export function ConfidenceBoostModal({ isOpen, onClose, canvaCatalogUrl }: Confi
                   </motion.h2>
                 )}
               </AnimatePresence>
+            </div>
+
+            {/* Barrita directly beneath the phrase that fills when popping */}
+            <div className="w-48 sm:w-60 h-1.5 bg-gray-200/90 rounded-full overflow-hidden shadow-xs mt-3 pointer-events-none">
+              <motion.div
+                className="h-full rounded-full transition-all duration-100 ease-out"
+                style={{
+                  width: `${popEnergy}%`,
+                  backgroundColor: popEnergy >= 80 ? '#000000' : '#4b5563'
+                }}
+              />
             </div>
           </div>
 
@@ -428,43 +439,10 @@ export function ConfidenceBoostModal({ isOpen, onClose, canvaCatalogUrl }: Confi
             )}
           </div>
 
-          {/* Bottom Footer Speed Meter Bar - With linear black Zap */}
-          <footer className="relative z-40 w-full px-6 py-4 pb-6 flex flex-col items-center justify-center pointer-events-auto bg-gradient-to-t from-[#fbfbfa] via-[#fbfbfa]/90 to-transparent">
-            <div className="flex items-center gap-2 mb-2">
-              <Zap
-                size={14}
-                className={`transition-colors stroke-[2] fill-none ${
-                  popEnergy > 70 ? 'text-black' : 'text-gray-600'
-                }`}
-              />
-              <span
-                className={`text-[9px] sm:text-[10px] uppercase tracking-[0.35em] font-sans transition-colors ${
-                  popEnergy > 70
-                    ? 'text-black font-black'
-                    : 'text-gray-500 font-bold'
-                }`}
-              >
-                {popEnergy >= 80 ? '¡CASI LO TIENES!' : 'BOOST RUSH'}
-              </span>
-              <span className="text-[9px] font-mono font-bold text-gray-400 ml-1">
-                {Math.round(popEnergy)}%
-              </span>
-            </div>
-
-            {/* Progress Bar - Larger & sleek */}
-            <div className="w-56 sm:w-72 h-2 bg-gray-200 rounded-full overflow-hidden shadow-xs">
-              <motion.div
-                className="h-full rounded-full transition-all duration-100 ease-out"
-                style={{
-                  width: `${popEnergy}%`,
-                  backgroundColor: popEnergy >= 80 ? '#000000' : '#374151'
-                }}
-              />
-            </div>
-
-            {/* Clear, larger instruction */}
-            <span className="text-[9px] sm:text-[10px] uppercase tracking-[0.3em] font-sans font-bold text-gray-500 mt-2">
-              Revienta rápido para llenar
+          {/* Bottom Footer - Ultra clean faded text only */}
+          <footer className="relative z-40 w-full px-6 py-3 pb-5 flex flex-col items-center justify-center pointer-events-none bg-gradient-to-t from-[#fbfbfa] via-[#fbfbfa]/80 to-transparent">
+            <span className="text-[9px] uppercase tracking-[0.35em] font-sans font-medium text-gray-400/60 select-none">
+              revienta rápido
             </span>
           </footer>
 
@@ -569,10 +547,10 @@ export function GiftEnvelopeSection({ onOpen }: GiftEnvelopeSectionProps) {
           <motion.button
             type="button"
             onClick={onOpen}
-            whileHover={{ scale: 1.03, y: -3 }}
-            whileTap={{ scale: 0.97 }}
-            className="group relative w-[260px] sm:w-[290px] h-[150px] sm:h-[165px] bg-[#0d0d0f] text-white rounded-xl shadow-[0_16px_38px_rgba(0,0,0,0.22)] hover:shadow-[0_24px_50px_rgba(0,0,0,0.35)] border border-white/15 overflow-hidden flex flex-col items-center justify-center p-5 transition-all duration-300 cursor-pointer text-center"
-            aria-label="Open for a confident boost"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className="group relative w-[260px] sm:w-[290px] h-[155px] sm:h-[170px] bg-[#0d0d0f] text-white rounded-xl shadow-[0_16px_38px_rgba(0,0,0,0.22)] hover:shadow-[0_22px_45px_rgba(0,0,0,0.35)] border border-white/15 overflow-hidden flex flex-col items-center justify-center p-5 cursor-pointer text-center"
+            aria-label="Abrir sobre de confidence boost"
           >
             {/* Subtle Luxury Satin Sheen */}
             <div className="absolute inset-0 bg-gradient-to-b from-white/[0.05] via-transparent to-black/40 pointer-events-none" />
@@ -580,12 +558,12 @@ export function GiftEnvelopeSection({ onOpen }: GiftEnvelopeSectionProps) {
             {/* Precision Luxury Envelope Creases SVG (Crisp Monochrome White / Silver) */}
             <svg
               className="absolute inset-0 w-full h-full pointer-events-none"
-              viewBox="0 0 290 165"
+              viewBox="0 0 290 170"
               fill="none"
             >
               {/* Upper Flap Triangle */}
               <path
-                d="M 0 0 L 145 84 L 290 0"
+                d="M 0 0 L 145 88 L 290 0"
                 stroke="rgba(255, 255, 255, 0.32)"
                 strokeWidth="1.2"
                 strokeLinecap="round"
@@ -593,36 +571,52 @@ export function GiftEnvelopeSection({ onOpen }: GiftEnvelopeSectionProps) {
               />
               {/* Inner fold depth */}
               <path
-                d="M 14 0 L 145 78 L 276 0"
+                d="M 14 0 L 145 82 L 276 0"
                 stroke="rgba(255, 255, 255, 0.08)"
                 strokeWidth="1"
               />
               {/* Bottom Diagonal Creases */}
               <path
-                d="M 0 165 L 105 84"
+                d="M 0 170 L 105 88"
                 stroke="rgba(255, 255, 255, 0.22)"
                 strokeWidth="1"
                 strokeLinecap="round"
               />
               <path
-                d="M 290 165 L 185 84"
+                d="M 290 170 L 185 88"
                 stroke="rgba(255, 255, 255, 0.22)"
                 strokeWidth="1"
                 strokeLinecap="round"
               />
             </svg>
 
-            {/* Signature "P." in Letter Style (Personal touch) */}
-            <div className="relative z-10 flex items-baseline justify-center mb-3 group-hover:scale-105 transition-transform select-none">
-              <span className="font-serif italic text-3xl sm:text-4xl text-white/95 font-normal leading-none tracking-tight">
-                P.
+            {/* Minimalist Click Indicator: Single subtle pulsing circle + hand + "click to open" */}
+            <div className="relative z-10 flex items-center justify-center gap-2.5 select-none pointer-events-none">
+              <div className="relative flex items-center justify-center">
+                {/* Minimalist pulsing circular ring (The single idle animation) */}
+                <motion.span
+                  animate={{
+                    scale: [0.8, 1.9, 0.8],
+                    opacity: [0.75, 0, 0.75]
+                  }}
+                  transition={{
+                    duration: 2.2,
+                    repeat: Infinity,
+                    ease: 'easeInOut'
+                  }}
+                  className="absolute -top-1.5 -left-1.5 w-4 h-4 rounded-full border border-white/70 pointer-events-none"
+                />
+
+                <Pointer
+                  size={22}
+                  className="text-white fill-white/20 stroke-[1.8] drop-shadow-[0_2px_6px_rgba(0,0,0,0.5)] -rotate-12 translate-x-0.5"
+                />
+              </div>
+
+              <span className="text-[11px] uppercase tracking-[0.3em] font-sans font-semibold text-white/85 drop-shadow">
+                click to open
               </span>
             </div>
-
-            {/* Faded sophisticated text, 10px consistent sizing, 100% legible */}
-            <span className="relative z-10 text-[10px] uppercase tracking-[0.28em] font-sans font-bold leading-snug text-white/80 pointer-events-none px-3 drop-shadow">
-              Open for a confident boost
-            </span>
           </motion.button>
         </div>
       </div>
