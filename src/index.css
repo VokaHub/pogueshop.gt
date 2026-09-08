@@ -23,6 +23,10 @@ html {
   }
 }
 
+.font-script {
+  font-family: 'Pinyon Script', 'Great Vibes', cursive;
+}
+
 .instagram-media {
   @apply !m-0 !w-full !border-0 !shadow-none !rounded-none;
 }

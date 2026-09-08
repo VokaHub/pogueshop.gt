@@ -590,8 +590,8 @@ export function GiftEnvelopeSection({ onOpen }: GiftEnvelopeSectionProps) {
               />
             </svg>
 
-            {/* Minimalist Click Indicator: Single subtle pulsing circle + hand + "click to open" */}
-            <div className="relative z-10 flex items-center justify-center gap-2.5 select-none pointer-events-none">
+            {/* Minimalist Click Indicator: Single subtle pulsing circle + hand */}
+            <div className="relative z-10 flex items-center justify-center select-none pointer-events-none">
               <div className="relative flex items-center justify-center">
                 {/* Minimalist pulsing circular ring (The single idle animation) */}
                 <motion.span
@@ -608,13 +608,16 @@ export function GiftEnvelopeSection({ onOpen }: GiftEnvelopeSectionProps) {
                 />
 
                 <Pointer
-                  size={22}
+                  size={24}
                   className="text-white fill-white/20 stroke-[1.8] drop-shadow-[0_2px_6px_rgba(0,0,0,0.5)] -rotate-12 translate-x-0.5"
                 />
               </div>
+            </div>
 
-              <span className="text-[11px] uppercase tracking-[0.3em] font-sans font-semibold text-white/85 drop-shadow">
-                click to open
+            {/* Lettering / Cursive Script 'P' in bottom-right corner */}
+            <div className="absolute bottom-2.5 right-4 sm:bottom-3 sm:right-5 z-10 select-none pointer-events-none">
+              <span className="font-script text-3xl sm:text-4xl text-white/80 font-normal leading-none drop-shadow-[0_2px_8px_rgba(255,255,255,0.12)]">
+                P
               </span>
             </div>
           </motion.button>
