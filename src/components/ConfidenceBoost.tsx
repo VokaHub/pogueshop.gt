@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, type MouseEvent } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, ExternalLink, ArrowLeft, Volume2, VolumeX, Heart, Sparkles, MessageCircle } from 'lucide-react';
+import { X, ExternalLink, ArrowLeft, Zap } from 'lucide-react';
 
 interface Bubble {
   id: number;
@@ -13,7 +13,7 @@ interface Bubble {
   shapeVariant: number;
 }
 
-interface FloatingLike {
+interface FloatingReaction {
   id: number;
   x: number; // percentage width
   emoji: string;
@@ -48,7 +48,7 @@ const SHAPE_VARIANTS = [
   'rounded-[35%_65%_55%_45%/55%_45%_65%_35%]'
 ];
 
-// Spaced out wall-to-wall spots across the lower playground (not grouped in 2 rows, well dispersed)
+// Spaced out wall-to-wall spots across the lower playground
 const SPACED_WALL_SPOTS = [
   { x: 12, y: 38, dx: 18, dy: -14 }, // near left wall
   { x: 26, y: 74, dx: 15, dy: -16 }, // bottom-left
@@ -62,11 +62,11 @@ const SPACED_WALL_SPOTS = [
   { x: 78, y: 76, dx: -16, dy: -14 }  // bottom-right
 ];
 
-// Influencer confidence boost notification compliments (uplifting, chic, positive)
+// Clean, uplifting compliments for confidence rush
 const INFLUENCER_NOTIFICATIONS = [
   {
     id: 1,
-    app: "MESSAGES",
+    app: "MENSAJES",
     sender: "Bestie ✨",
     time: "ahora",
     text: "Oye... ¿quién te dio permiso de verte tan icónica hoy?! 🔥"
@@ -76,7 +76,7 @@ const INFLUENCER_NOTIFICATIONS = [
     app: "INSTAGRAM",
     sender: "Notificaciones",
     time: "ahora",
-    text: "A 3,240 personas les encantó tu vibe y estilo ✨"
+    text: "A 3,240 personas les encantó tu vibra y estilo de hoy ✨"
   },
   {
     id: 3,
@@ -94,8 +94,6 @@ const INFLUENCER_NOTIFICATIONS = [
   }
 ];
 
-const LIKE_EMOJIS = ['❤️', '🖤', '✨', '🔥', '💖', '👑', '⚡'];
-
 interface ConfidenceBoostProps {
   isOpen: boolean;
   onClose: () => void;
@@ -107,13 +105,12 @@ export function ConfidenceBoostModal({ isOpen, onClose, canvaCatalogUrl }: Confi
   // No quote shown until first pop!
   const [currentQuote, setCurrentQuote] = useState<string | null>(null);
   const [lastPoppedPosition, setLastPoppedPosition] = useState<{ x: number; y: number } | null>(null);
-  const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
   const audioCtxRef = useRef<AudioContext | null>(null);
 
   // Speed Pop Rush Meter (0 to 100)
   const [popEnergy, setPopEnergy] = useState<number>(0);
   const [isInfluencerRush, setIsInfluencerRush] = useState<boolean>(false);
-  const [floatingLikes, setFloatingLikes] = useState<FloatingLike[]>([]);
+  const [floatingReactions, setFloatingReactions] = useState<FloatingReaction[]>([]);
 
   const getAudioContext = () => {
     try {
@@ -132,9 +129,8 @@ export function ConfidenceBoostModal({ isOpen, onClose, canvaCatalogUrl }: Confi
     }
   };
 
-  // Pop sound via Web Audio API with mobile resume
+  // Pop sound via Web Audio API
   const playPopSound = () => {
-    if (!soundEnabled) return;
     try {
       const audioCtx = getAudioContext();
       if (!audioCtx) return;
@@ -160,9 +156,8 @@ export function ConfidenceBoostModal({ isOpen, onClose, canvaCatalogUrl }: Confi
     }
   };
 
-  // Upbeat luxury chime when full influencer meter activates
+  // Upbeat luxury chime when full meter activates
   const playCelebrationChime = () => {
-    if (!soundEnabled) return;
     try {
       const audioCtx = getAudioContext();
       if (!audioCtx) return;
@@ -173,43 +168,16 @@ export function ConfidenceBoostModal({ isOpen, onClose, canvaCatalogUrl }: Confi
         osc.type = 'sine';
         const startTime = audioCtx.currentTime + idx * 0.08;
         osc.frequency.setValueAtTime(freq, startTime);
-        gain.gain.setValueAtTime(0.22, startTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.4);
+        gain.gain.setValueAtTime(0.2, startTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.38);
         osc.connect(gain);
         gain.connect(audioCtx.destination);
         osc.start(startTime);
-        osc.stop(startTime + 0.41);
+        osc.stop(startTime + 0.39);
       });
     } catch {
       // Audio fallback
     }
-  };
-
-  const toggleSound = () => {
-    setSoundEnabled(prev => {
-      const next = !prev;
-      if (next) {
-        // Unlock audio context on mobile tap
-        const ctx = getAudioContext();
-        if (ctx) {
-          try {
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(520, ctx.currentTime);
-            gain.gain.setValueAtTime(0.18, ctx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
-            osc.connect(gain);
-            gain.connect(ctx.destination);
-            osc.start(ctx.currentTime);
-            osc.stop(ctx.currentTime + 0.08);
-          } catch {
-            // fallback
-          }
-        }
-      }
-      return next;
-    });
   };
 
   const resetBubbles = () => {
@@ -226,7 +194,7 @@ export function ConfidenceBoostModal({ isOpen, onClose, canvaCatalogUrl }: Confi
     setBubbles(initial);
   };
 
-  // Decay timer: If the user stops popping fast, the meter empties quickly
+  // Decay timer: If user stops popping fast, the meter empties quickly
   useEffect(() => {
     if (!isOpen || isInfluencerRush) return;
     const interval = setInterval(() => {
@@ -242,6 +210,7 @@ export function ConfidenceBoostModal({ isOpen, onClose, canvaCatalogUrl }: Confi
       setCurrentQuote(null); // No quote displayed initially until first pop
       setPopEnergy(0);
       setIsInfluencerRush(false);
+      setFloatingReactions([]);
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'auto';
@@ -257,21 +226,21 @@ export function ConfidenceBoostModal({ isOpen, onClose, canvaCatalogUrl }: Confi
     setPopEnergy(0);
     playCelebrationChime();
 
-    // Generate burst of floating likes/hearts
-    const likes: FloatingLike[] = Array.from({ length: 24 }).map((_, i) => ({
+    // Stream of iPhone reaction emojis floating up from the bottom
+    const reactions: FloatingReaction[] = Array.from({ length: 28 }).map((_, i) => ({
       id: Date.now() + i,
-      x: 15 + Math.random() * 70,
-      emoji: LIKE_EMOJIS[Math.floor(Math.random() * LIKE_EMOJIS.length)],
-      size: 20 + Math.floor(Math.random() * 20),
-      duration: 2 + Math.random() * 1.5,
-      delay: Math.random() * 1.2
+      x: 8 + Math.random() * 84,
+      emoji: ['❤️', '🔥', '✨', '💖', '👑', '🖤'][Math.floor(Math.random() * 6)],
+      size: 24 + Math.floor(Math.random() * 18),
+      duration: 2.2 + Math.random() * 1.6,
+      delay: Math.random() * 1.4
     }));
-    setFloatingLikes(likes);
+    setFloatingReactions(reactions);
 
-    // Auto-dismiss celebration after 6.5 seconds
+    // Auto-dismiss celebration after 6 seconds
     setTimeout(() => {
       setIsInfluencerRush(false);
-    }, 6500);
+    }, 6000);
   };
 
   const handlePop = (bubble: Bubble, event: MouseEvent) => {
@@ -334,7 +303,7 @@ export function ConfidenceBoostModal({ isOpen, onClose, canvaCatalogUrl }: Confi
           <header className="relative z-40 w-full px-6 md:px-12 h-16 md:h-18 flex items-center justify-between flex-shrink-0">
             <button
               onClick={onClose}
-              className="inline-flex items-center gap-2 text-[10px] uppercase tracking-[0.25em] font-sans font-medium text-gray-700 hover:text-black transition-colors"
+              className="inline-flex items-center gap-2 text-[10px] uppercase tracking-[0.25em] font-sans font-medium text-gray-700 hover:text-black transition-colors cursor-pointer"
             >
               <ArrowLeft size={14} /> Volver
             </button>
@@ -355,7 +324,7 @@ export function ConfidenceBoostModal({ isOpen, onClose, canvaCatalogUrl }: Confi
 
               <button
                 onClick={onClose}
-                className="p-2 text-gray-500 hover:text-black transition-colors"
+                className="p-2 text-gray-500 hover:text-black transition-colors cursor-pointer"
                 aria-label="Cerrar"
               >
                 <X size={18} />
@@ -363,28 +332,11 @@ export function ConfidenceBoostModal({ isOpen, onClose, canvaCatalogUrl }: Confi
             </div>
           </header>
 
-          {/* Unified Top Area: Instruction & Large Revealed Quote (No visible dividers) */}
-          <div className="relative z-30 w-full px-6 max-w-4xl mx-auto pt-1 pb-3 text-center pointer-events-none flex-shrink-0">
-            <div className="inline-flex items-center justify-center gap-2.5 mb-2 pointer-events-auto">
-              <span className="text-[9px] md:text-[10px] uppercase tracking-[0.35em] text-gray-400 font-sans font-semibold">
-                Haz pop haciendo clic
-              </span>
-              <span className="text-gray-300 text-[10px] select-none">•</span>
-              <button
-                type="button"
-                onClick={toggleSound}
-                className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border transition-all text-[8px] md:text-[9px] uppercase tracking-[0.2em] font-sans font-bold cursor-pointer active:scale-95 ${
-                  soundEnabled
-                    ? 'border-gray-300 bg-white text-black shadow-xs hover:border-black'
-                    : 'border-transparent bg-gray-100 text-gray-400 hover:text-gray-600'
-                }`}
-                title={soundEnabled ? "Desactivar sonido" : "Activar sonido"}
-                aria-label={soundEnabled ? "Desactivar sonido" : "Activar sonido"}
-              >
-                {soundEnabled ? <Volume2 size={11} /> : <VolumeX size={11} />}
-                <span>{soundEnabled ? 'sound on' : 'sound off'}</span>
-              </button>
-            </div>
+          {/* Unified Top Area: Instruction (Centered) & Large Revealed Quote */}
+          <div className="relative z-30 w-full px-6 max-w-4xl mx-auto pt-2 pb-3 text-center pointer-events-none flex-shrink-0">
+            <p className="text-[10px] md:text-[11px] uppercase tracking-[0.38em] text-gray-400 font-sans font-bold mb-2">
+              Haz pop haciendo clic
+            </p>
 
             {/* Revealed Quote Display - Only appears upon first pop */}
             <div className="min-h-[75px] md:min-h-[105px] flex items-center justify-center">
@@ -405,7 +357,7 @@ export function ConfidenceBoostModal({ isOpen, onClose, canvaCatalogUrl }: Confi
             </div>
           </div>
 
-          {/* Blobs Playground - Unified cluster ("un solo montón") safely below the quote */}
+          {/* Blobs Playground */}
           <div className="relative flex-1 w-full overflow-hidden">
             {bubbles.map((bubble) => (
               <div
@@ -476,133 +428,112 @@ export function ConfidenceBoostModal({ isOpen, onClose, canvaCatalogUrl }: Confi
             )}
           </div>
 
-          {/* Bottom Footer Speed Meter Bar ("Barrita chiquita abajo") */}
-          <footer className="relative z-40 w-full px-6 py-3 pb-5 flex flex-col items-center justify-center pointer-events-auto bg-gradient-to-t from-[#fbfbfa] via-[#fbfbfa]/80 to-transparent">
-            <div className="flex items-center gap-2 mb-1.5">
+          {/* Bottom Footer Speed Meter Bar - With linear black Zap */}
+          <footer className="relative z-40 w-full px-6 py-4 pb-6 flex flex-col items-center justify-center pointer-events-auto bg-gradient-to-t from-[#fbfbfa] via-[#fbfbfa]/90 to-transparent">
+            <div className="flex items-center gap-2 mb-2">
+              <Zap
+                size={14}
+                className={`transition-colors stroke-[2] fill-none ${
+                  popEnergy > 70 ? 'text-black' : 'text-gray-600'
+                }`}
+              />
               <span
-                className={`text-[8px] sm:text-[9px] uppercase tracking-[0.3em] font-sans transition-colors ${
+                className={`text-[9px] sm:text-[10px] uppercase tracking-[0.35em] font-sans transition-colors ${
                   popEnergy > 70
-                    ? 'text-black font-black animate-pulse'
-                    : 'text-gray-400 font-semibold'
+                    ? 'text-black font-black'
+                    : 'text-gray-500 font-bold'
                 }`}
               >
-                {popEnergy >= 80 ? '⚡ ¡RÁPIDO, CASI LO TIENES!' : '⚡ BOOST RUSH'}
+                {popEnergy >= 80 ? '¡CASI LO TIENES!' : 'BOOST RUSH'}
               </span>
-              <span className="text-[8px] font-mono text-gray-400">
+              <span className="text-[9px] font-mono font-bold text-gray-400 ml-1">
                 {Math.round(popEnergy)}%
               </span>
             </div>
 
-            {/* Subtle Slim Progress Bar */}
-            <div className="w-48 sm:w-56 h-1.5 bg-gray-200/90 rounded-full overflow-hidden shadow-xs">
+            {/* Progress Bar - Larger & sleek */}
+            <div className="w-56 sm:w-72 h-2 bg-gray-200 rounded-full overflow-hidden shadow-xs">
               <motion.div
                 className="h-full rounded-full transition-all duration-100 ease-out"
                 style={{
                   width: `${popEnergy}%`,
-                  backgroundColor: popEnergy >= 80 ? '#000000' : '#4b5563'
+                  backgroundColor: popEnergy >= 80 ? '#000000' : '#374151'
                 }}
               />
             </div>
-            <span className="text-[7px] uppercase tracking-[0.25em] text-gray-400/80 mt-1">
-              revienta rápido para llenar
+
+            {/* Clear, larger instruction */}
+            <span className="text-[9px] sm:text-[10px] uppercase tracking-[0.3em] font-sans font-bold text-gray-500 mt-2">
+              Revienta rápido para llenar
             </span>
           </footer>
 
-          {/* INFLUENCER CELEBRATION OVERLAY (iPhone Notification Cards + Like Explosion) */}
+          {/* INFLUENCER CELEBRATION OVERLAY - iPhone Emojis Flying Up + Minimal Black Notifications */}
           <AnimatePresence>
             {isInfluencerRush && (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="fixed inset-0 z-[120] pointer-events-none flex flex-col items-center justify-start pt-16 sm:pt-20 px-4"
+                className="fixed inset-0 z-[120] pointer-events-none flex flex-col items-center justify-start pt-12 sm:pt-16 px-4 overflow-hidden"
               >
-                {/* Floating Likes / Hearts Stream */}
-                {floatingLikes.map((like) => (
+                {/* Floating iPhone reaction emojis streaming up from the bottom */}
+                {floatingReactions.map((reaction) => (
                   <motion.div
-                    key={like.id}
+                    key={reaction.id}
                     initial={{
                       opacity: 0,
-                      y: 400,
-                      x: `${like.x}vw`,
+                      y: 100,
                       scale: 0.6
                     }}
                     animate={{
                       opacity: [0, 1, 1, 0],
-                      y: -120,
-                      scale: [0.6, 1.2, 1.3, 0.9],
-                      x: [`${like.x}vw`, `${like.x + (Math.random() * 12 - 6)}vw`, `${like.x}vw`]
+                      y: -620,
+                      scale: [0.6, 1.25, 1.25, 0.9],
+                      x: [0, Math.sin(reaction.id) * 20, 0]
                     }}
                     transition={{
-                      duration: like.duration,
-                      delay: like.delay,
+                      duration: reaction.duration,
+                      delay: reaction.delay,
                       ease: 'easeOut'
                     }}
                     style={{
                       position: 'fixed',
-                      bottom: 0,
-                      left: 0,
-                      fontSize: `${like.size}px`,
-                      zIndex: 130
+                      bottom: '24px',
+                      left: `${reaction.x}%`,
+                      fontSize: `${reaction.size}px`,
+                      pointerEvents: 'none',
+                      zIndex: 125
                     }}
                   >
-                    {like.emoji}
+                    {reaction.emoji}
                   </motion.div>
                 ))}
 
-                {/* Celebration Pill Header (Dynamic Island Style) */}
-                <motion.div
-                  initial={{ scale: 0.8, y: -20, opacity: 0 }}
-                  animate={{ scale: 1, y: 0, opacity: 1 }}
-                  exit={{ scale: 0.8, y: -20, opacity: 0 }}
-                  transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-                  className="mb-4 inline-flex items-center gap-2 bg-black text-white px-4 py-1.5 rounded-full shadow-2xl border border-white/20 pointer-events-auto"
-                >
-                  <Sparkles size={13} className="text-amber-300 animate-spin" />
-                  <span className="text-[9px] uppercase tracking-[0.3em] font-sans font-black">
-                    ICONIC ENERGY UNLOCKED
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => setIsInfluencerRush(false)}
-                    className="ml-2 text-white/50 hover:text-white transition-colors"
-                    aria-label="Cerrar notificaciones"
-                  >
-                    <X size={12} />
-                  </button>
-                </motion.div>
-
-                {/* iPhone Black Notification Banners (Cascading Entry) */}
-                <div className="w-full max-w-sm sm:max-w-md space-y-2.5 pointer-events-auto">
+                {/* Pure Black Minimalist Notification Banners (No top banner, clean entry) */}
+                <div className="w-full max-w-sm sm:max-w-md space-y-2.5 pointer-events-auto relative z-[130] mt-2">
                   {INFLUENCER_NOTIFICATIONS.map((notif, index) => (
                     <motion.div
                       key={notif.id}
-                      initial={{ opacity: 0, y: -30, scale: 0.92 }}
+                      initial={{ opacity: 0, y: -25, scale: 0.95 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: -15, scale: 0.95 }}
                       transition={{
-                        delay: index * 0.28,
+                        delay: index * 0.22,
                         type: 'spring',
-                        stiffness: 350,
+                        stiffness: 360,
                         damping: 24
                       }}
-                      className="w-full bg-[#111114]/95 backdrop-blur-xl text-white rounded-2xl p-3.5 sm:p-4 shadow-[0_20px_40px_rgba(0,0,0,0.45)] border border-white/15"
+                      className="w-full bg-[#0d0d10]/95 backdrop-blur-2xl text-white rounded-2xl p-4 shadow-[0_20px_45px_rgba(0,0,0,0.5)] border border-white/12"
                     >
-                      {/* App Header */}
-                      <div className="flex items-center justify-between text-[8px] uppercase tracking-[0.25em] text-white/50 mb-1.5">
-                        <div className="flex items-center gap-1.5">
-                          {notif.app === 'INSTAGRAM' ? (
-                            <Heart size={11} className="text-rose-400 fill-rose-400" />
-                          ) : (
-                            <MessageCircle size={11} className="text-blue-400 fill-blue-400" />
-                          )}
-                          <span className="font-bold">{notif.app}</span>
-                        </div>
+                      {/* Minimal Monochrome App Header */}
+                      <div className="flex items-center justify-between text-[8px] uppercase tracking-[0.25em] text-white/50 mb-1.5 font-bold">
+                        <span>{notif.app}</span>
                         <span>{notif.time}</span>
                       </div>
 
-                      {/* Notification Body */}
-                      <p className="text-[11px] sm:text-[12px] font-sans font-bold text-white leading-snug">
+                      {/* Sender & Compliment */}
+                      <p className="text-[12px] font-sans font-bold text-white leading-snug">
                         {notif.sender}
                       </p>
                       <p className="text-[11px] sm:text-[12px] font-sans text-white/85 leading-snug mt-0.5">
@@ -611,16 +542,6 @@ export function ConfidenceBoostModal({ isOpen, onClose, canvaCatalogUrl }: Confi
                     </motion.div>
                   ))}
                 </div>
-
-                {/* Counter Pill */}
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 1.4 }}
-                  className="mt-3 bg-white/90 backdrop-blur-md text-black px-3.5 py-1 rounded-full shadow-lg text-[9px] uppercase tracking-[0.25em] font-sans font-bold"
-                >
-                  🔥 +99 notificaciones de amor propio
-                </motion.div>
               </motion.div>
             )}
           </AnimatePresence>
