@@ -158,9 +158,6 @@ export default function App() {
         </div>
       </section>
 
-      {/* Mini Gift Envelope Section - Before Servicios & Guía */}
-      <GiftEnvelopeSection onOpen={() => setIsConfidenceBoostOpen(true)} />
-
       {/* Info Section - Servicios & Guía */}
       <section id="info" className="py-20 md:py-32 bg-white border-t border-gray-50">
         <div className="max-w-7xl mx-auto px-6 md:px-10">
@@ -322,6 +319,9 @@ export default function App() {
           </div>
         </div>
       </section>
+
+      {/* Gift Envelope Section - A Special Gift For You */}
+      <GiftEnvelopeSection onOpen={() => setIsConfidenceBoostOpen(true)} />
 
       {/* Footer */}
       <footer className="py-16 md:py-24 border-t border-gray-100 bg-white">

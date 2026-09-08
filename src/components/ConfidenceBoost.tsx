@@ -13,15 +13,6 @@ interface Bubble {
   shapeVariant: number;
 }
 
-interface FloatingReaction {
-  id: number;
-  x: number; // percentage width
-  emoji: string;
-  size: number;
-  duration: number;
-  delay: number;
-}
-
 const CONFIDENCE_QUOTES = [
   "You're iconic, darling.",
   "Main character energy only.",
@@ -62,38 +53,6 @@ const SPACED_WALL_SPOTS = [
   { x: 78, y: 76, dx: -16, dy: -14 }  // bottom-right
 ];
 
-// Clean, uplifting compliments for confidence rush
-const INFLUENCER_NOTIFICATIONS = [
-  {
-    id: 1,
-    app: "MENSAJES",
-    sender: "Bestie ✨",
-    time: "ahora",
-    text: "Oye... ¿quién te dio permiso de verte tan icónica hoy?! 🔥"
-  },
-  {
-    id: 2,
-    app: "INSTAGRAM",
-    sender: "Notificaciones",
-    time: "ahora",
-    text: "A 3,240 personas les encantó tu vibra y estilo de hoy ✨"
-  },
-  {
-    id: 3,
-    app: "DIRECT",
-    sender: "Tu admirador secreto",
-    time: "hace 1 min",
-    text: "Literalmente iluminas cualquier lugar al que entras 🖤"
-  },
-  {
-    id: 4,
-    app: "DAILY BOOST",
-    sender: "POGUE Reminder",
-    time: "ahora",
-    text: "That girl energy activa al 100%. Nunca bajes tus estándares 👑"
-  }
-];
-
 interface ConfidenceBoostProps {
   isOpen: boolean;
   onClose: () => void;
@@ -109,8 +68,7 @@ export function ConfidenceBoostModal({ isOpen, onClose, canvaCatalogUrl }: Confi
 
   // Speed Pop Rush Meter (0 to 100)
   const [popEnergy, setPopEnergy] = useState<number>(0);
-  const [isInfluencerRush, setIsInfluencerRush] = useState<boolean>(false);
-  const [floatingReactions, setFloatingReactions] = useState<FloatingReaction[]>([]);
+  const [showGiftReward, setShowGiftReward] = useState<boolean>(false);
 
   const getAudioContext = () => {
     try {
@@ -196,21 +154,20 @@ export function ConfidenceBoostModal({ isOpen, onClose, canvaCatalogUrl }: Confi
 
   // Decay timer: If user stops popping fast, the meter empties quickly
   useEffect(() => {
-    if (!isOpen || isInfluencerRush) return;
+    if (!isOpen || showGiftReward) return;
     const interval = setInterval(() => {
       setPopEnergy(prev => (prev <= 0 ? 0 : Math.max(0, prev - 2.8)));
     }, 100);
 
     return () => clearInterval(interval);
-  }, [isOpen, isInfluencerRush]);
+  }, [isOpen, showGiftReward]);
 
   useEffect(() => {
     if (isOpen) {
       resetBubbles();
       setCurrentQuote(null); // No quote displayed initially until first pop
       setPopEnergy(0);
-      setIsInfluencerRush(false);
-      setFloatingReactions([]);
+      setShowGiftReward(false);
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'auto';
@@ -220,27 +177,11 @@ export function ConfidenceBoostModal({ isOpen, onClose, canvaCatalogUrl }: Confi
     };
   }, [isOpen]);
 
-  // Trigger Influencer Rush celebration mode
-  const triggerInfluencerRush = () => {
-    setIsInfluencerRush(true);
+  // Trigger Gift Reward when meter reaches 100%
+  const triggerGiftReward = () => {
+    setShowGiftReward(true);
     setPopEnergy(0);
     playCelebrationChime();
-
-    // Stream of iPhone reaction emojis floating up from the bottom
-    const reactions: FloatingReaction[] = Array.from({ length: 28 }).map((_, i) => ({
-      id: Date.now() + i,
-      x: 8 + Math.random() * 84,
-      emoji: ['❤️', '🔥', '✨', '💖', '👑', '🖤'][Math.floor(Math.random() * 6)],
-      size: 24 + Math.floor(Math.random() * 18),
-      duration: 2.2 + Math.random() * 1.6,
-      delay: Math.random() * 1.4
-    }));
-    setFloatingReactions(reactions);
-
-    // Auto-dismiss celebration after 6 seconds
-    setTimeout(() => {
-      setIsInfluencerRush(false);
-    }, 6000);
   };
 
   const handlePop = (bubble: Bubble, event: MouseEvent) => {
@@ -259,11 +200,11 @@ export function ConfidenceBoostModal({ isOpen, onClose, canvaCatalogUrl }: Confi
     setBubbles(prev => prev.filter(b => b.id !== bubble.id));
 
     // Increase speed energy meter (+22% per fast pop)
-    if (!isInfluencerRush) {
+    if (!showGiftReward) {
       setPopEnergy(prev => {
         const next = Math.min(100, prev + 22);
         if (next >= 100) {
-          triggerInfluencerRush();
+          triggerGiftReward();
           return 0;
         }
         return next;
@@ -446,80 +387,82 @@ export function ConfidenceBoostModal({ isOpen, onClose, canvaCatalogUrl }: Confi
             </span>
           </footer>
 
-          {/* INFLUENCER CELEBRATION OVERLAY - iPhone Emojis Flying Up + Minimal Black Notifications */}
+          {/* BLACK GIFT DISCOUNT CARD MODAL */}
           <AnimatePresence>
-            {isInfluencerRush && (
+            {showGiftReward && (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="fixed inset-0 z-[120] pointer-events-none flex flex-col items-center justify-start pt-12 sm:pt-16 px-4 overflow-hidden"
+                className="fixed inset-0 z-[120] bg-black/60 backdrop-blur-xs flex items-center justify-center p-5"
+                onClick={() => setShowGiftReward(false)}
               >
-                {/* Floating iPhone reaction emojis streaming up from the bottom */}
-                {floatingReactions.map((reaction) => (
-                  <motion.div
-                    key={reaction.id}
-                    initial={{
-                      opacity: 0,
-                      y: 100,
-                      scale: 0.6
-                    }}
-                    animate={{
-                      opacity: [0, 1, 1, 0],
-                      y: -620,
-                      scale: [0.6, 1.25, 1.25, 0.9],
-                      x: [0, Math.sin(reaction.id) * 20, 0]
-                    }}
-                    transition={{
-                      duration: reaction.duration,
-                      delay: reaction.delay,
-                      ease: 'easeOut'
-                    }}
-                    style={{
-                      position: 'fixed',
-                      bottom: '24px',
-                      left: `${reaction.x}%`,
-                      fontSize: `${reaction.size}px`,
-                      pointerEvents: 'none',
-                      zIndex: 125
-                    }}
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95, y: 15 }}
+                  transition={{ type: 'spring', stiffness: 360, damping: 26 }}
+                  onClick={(e) => e.stopPropagation()}
+                  className="relative w-full max-w-sm sm:max-w-md bg-[#0d0d10] text-white rounded-2xl p-7 sm:p-9 shadow-[0_25px_60px_rgba(0,0,0,0.7)] border border-white/20 text-center overflow-hidden"
+                >
+                  {/* Subtle luxury satin sheen */}
+                  <div className="absolute inset-0 bg-gradient-to-b from-white/[0.08] via-transparent to-black/50 pointer-events-none" />
+
+                  {/* Close button */}
+                  <button
+                    type="button"
+                    onClick={() => setShowGiftReward(false)}
+                    className="absolute top-4 right-4 p-2 text-white/50 hover:text-white transition-colors cursor-pointer z-20"
+                    aria-label="Cerrar tarjeta de regalo"
                   >
-                    {reaction.emoji}
-                  </motion.div>
-                ))}
+                    <X size={18} />
+                  </button>
 
-                {/* Pure Black Minimalist Notification Banners (No top banner, clean entry) */}
-                <div className="w-full max-w-sm sm:max-w-md space-y-2.5 pointer-events-auto relative z-[130] mt-2">
-                  {INFLUENCER_NOTIFICATIONS.map((notif, index) => (
-                    <motion.div
-                      key={notif.id}
-                      initial={{ opacity: 0, y: -25, scale: 0.95 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: -15, scale: 0.95 }}
-                      transition={{
-                        delay: index * 0.22,
-                        type: 'spring',
-                        stiffness: 360,
-                        damping: 24
-                      }}
-                      className="w-full bg-[#0d0d10]/95 backdrop-blur-2xl text-white rounded-2xl p-4 shadow-[0_20px_45px_rgba(0,0,0,0.5)] border border-white/12"
-                    >
-                      {/* Minimal Monochrome App Header */}
-                      <div className="flex items-center justify-between text-[8px] uppercase tracking-[0.25em] text-white/50 mb-1.5 font-bold">
-                        <span>{notif.app}</span>
-                        <span>{notif.time}</span>
-                      </div>
+                  {/* Monogram / Header */}
+                  <div className="relative z-10 flex flex-col items-center mb-3 select-none">
+                    <span className="font-script text-4xl sm:text-5xl text-white/90 leading-none">
+                      P.
+                    </span>
+                    <span className="text-[8px] uppercase tracking-[0.35em] text-white/45 font-sans font-semibold mt-1">
+                      POGUESHOP.GT
+                    </span>
+                  </div>
 
-                      {/* Sender & Compliment */}
-                      <p className="text-[12px] font-sans font-bold text-white leading-snug">
-                        {notif.sender}
-                      </p>
-                      <p className="text-[11px] sm:text-[12px] font-sans text-white/85 leading-snug mt-0.5">
-                        {notif.text}
-                      </p>
-                    </motion.div>
-                  ))}
-                </div>
+                  {/* Core Card Content: gift 10% discount & en tu primera compra */}
+                  <div className="relative z-10 my-4">
+                    <h3 className="text-2xl sm:text-3xl font-sans font-bold uppercase tracking-[0.16em] text-white leading-tight">
+                      gift 10% discount
+                    </h3>
+                    <p className="text-sm sm:text-base font-serif italic text-white/90 mt-2.5">
+                      en tu primera compra.
+                    </p>
+                  </div>
+
+                  {/* Footnote: Aplican restricciones & CTA */}
+                  <div className="relative z-10 mt-6 pt-5 border-t border-white/10 flex flex-col items-center">
+                    <p className="text-[10px] uppercase tracking-[0.25em] text-white/50 font-sans font-medium">
+                      Aplican restricciones.
+                    </p>
+
+                    <div className="mt-5 w-full flex items-center gap-3">
+                      <a
+                        href={canvaCatalogUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex-1 py-3 px-4 bg-white text-black text-[10px] sm:text-[11px] uppercase tracking-[0.22em] font-sans font-bold rounded-lg hover:bg-white/90 transition-colors inline-flex items-center justify-center gap-2"
+                      >
+                        Ver Catálogo <ExternalLink size={12} />
+                      </a>
+                      <button
+                        type="button"
+                        onClick={() => setShowGiftReward(false)}
+                        className="py-3 px-4 bg-white/10 text-white text-[10px] sm:text-[11px] uppercase tracking-[0.22em] font-sans font-medium rounded-lg hover:bg-white/15 transition-colors cursor-pointer"
+                      >
+                        Cerrar
+                      </button>
+                    </div>
+                  </div>
+                </motion.div>
               </motion.div>
             )}
           </AnimatePresence>
@@ -535,12 +478,17 @@ interface GiftEnvelopeSectionProps {
 
 export function GiftEnvelopeSection({ onOpen }: GiftEnvelopeSectionProps) {
   return (
-    <section className="py-16 md:py-24 bg-white">
+    <section className="py-20 md:py-28 bg-white border-t border-gray-100">
       <div className="max-w-4xl mx-auto px-6 text-center">
-        {/* Editorial Section Tag - Consistent 10px across page */}
-        <p className="text-[10px] uppercase tracking-[0.4em] text-gray-400 font-sans font-bold mb-6">
-          A Special Note For You
+        {/* Faded small intro question */}
+        <p className="text-[10px] sm:text-[11px] uppercase tracking-[0.35em] text-gray-400 font-sans font-medium mb-2.5">
+          ¿Es tu primera compra?
         </p>
+
+        {/* Section Heading: A Special Gift For You */}
+        <h3 className="text-2xl sm:text-3xl md:text-4xl font-serif italic text-gray-950 tracking-tight mb-8">
+          A Special Gift For You
+        </h3>
 
         {/* Chic Monochrome Envelope Card */}
         <div className="flex justify-center">
