@@ -353,6 +353,7 @@ export default function App() {
         isOpen={isConfidenceBoostOpen}
         onClose={() => setIsConfidenceBoostOpen(false)}
         canvaCatalogUrl={CANVA_CATALOG_URL}
+        instagramUrl={INSTAGRAM_PROFILE_URL}
       />
     </div>
   );

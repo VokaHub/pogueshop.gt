@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef, type MouseEvent } from 'react';
+import { useState, useEffect, useRef, type SyntheticEvent } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, ExternalLink, ArrowLeft, Pointer } from 'lucide-react';
+import { X, ExternalLink, ArrowLeft, Pointer, Instagram } from 'lucide-react';
 
 interface Bubble {
   id: number;
@@ -57,51 +57,71 @@ interface ConfidenceBoostProps {
   isOpen: boolean;
   onClose: () => void;
   canvaCatalogUrl: string;
+  instagramUrl?: string;
 }
 
-export function ConfidenceBoostModal({ isOpen, onClose, canvaCatalogUrl }: ConfidenceBoostProps) {
+// Shared global AudioContext for reliable mobile web playback
+let sharedAudioContext: AudioContext | null = null;
+
+const unlockSharedAudio = (): AudioContext | null => {
+  try {
+    const AudioContextClass =
+      window.AudioContext ||
+      (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+    if (!AudioContextClass) return null;
+
+    if (!sharedAudioContext) {
+      sharedAudioContext = new AudioContextClass();
+    }
+
+    if (sharedAudioContext.state === 'suspended') {
+      sharedAudioContext.resume();
+    }
+
+    // Play a 1-sample silent sound buffer to prime and unlock iOS Safari audio pipeline
+    const buffer = sharedAudioContext.createBuffer(1, 1, 22050);
+    const source = sharedAudioContext.createBufferSource();
+    source.buffer = buffer;
+    source.connect(sharedAudioContext.destination);
+    source.start(0);
+
+    return sharedAudioContext;
+  } catch {
+    return null;
+  }
+};
+
+export function ConfidenceBoostModal({
+  isOpen,
+  onClose,
+  canvaCatalogUrl,
+  instagramUrl = 'https://www.instagram.com/pogueshop.gt/'
+}: ConfidenceBoostProps) {
   const [bubbles, setBubbles] = useState<Bubble[]>([]);
   // No quote shown until first pop!
   const [currentQuote, setCurrentQuote] = useState<string | null>(null);
   const [lastPoppedPosition, setLastPoppedPosition] = useState<{ x: number; y: number } | null>(null);
-  const audioCtxRef = useRef<AudioContext | null>(null);
+  const poppedIdsRef = useRef<Set<number>>(new Set());
 
   // Speed Pop Rush Meter (0 to 100)
   const [popEnergy, setPopEnergy] = useState<number>(0);
   const [showGiftReward, setShowGiftReward] = useState<boolean>(false);
 
-  const getAudioContext = () => {
-    try {
-      if (!audioCtxRef.current) {
-        const AudioCtxClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-        if (AudioCtxClass) {
-          audioCtxRef.current = new AudioCtxClass();
-        }
-      }
-      if (audioCtxRef.current && audioCtxRef.current.state === 'suspended') {
-        audioCtxRef.current.resume();
-      }
-      return audioCtxRef.current;
-    } catch {
-      return null;
-    }
-  };
-
-  // Pop sound via Web Audio API
+  // Pop sound via Web Audio API (previous beloved tone: sine 340Hz -> 840Hz upward sweep)
   const playPopSound = () => {
     try {
-      const audioCtx = getAudioContext();
+      const audioCtx = unlockSharedAudio();
       if (!audioCtx) return;
 
+      const now = audioCtx.currentTime;
       const osc = audioCtx.createOscillator();
       const gain = audioCtx.createGain();
 
       osc.type = 'sine';
-      const now = audioCtx.currentTime;
       osc.frequency.setValueAtTime(340, now);
       osc.frequency.exponentialRampToValueAtTime(840, now + 0.07);
 
-      gain.gain.setValueAtTime(0.3, now);
+      gain.gain.setValueAtTime(0.35, now);
       gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
 
       osc.connect(gain);
@@ -109,6 +129,15 @@ export function ConfidenceBoostModal({ isOpen, onClose, canvaCatalogUrl }: Confi
 
       osc.start(now);
       osc.stop(now + 0.1);
+
+      // Tactile haptic feedback on devices supporting vibrate
+      if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+        try {
+          navigator.vibrate(14);
+        } catch {
+          // ignore
+        }
+      }
     } catch {
       // Audio fallback
     }
@@ -117,7 +146,7 @@ export function ConfidenceBoostModal({ isOpen, onClose, canvaCatalogUrl }: Confi
   // Upbeat luxury chime when full meter activates
   const playCelebrationChime = () => {
     try {
-      const audioCtx = getAudioContext();
+      const audioCtx = unlockSharedAudio();
       if (!audioCtx) return;
       const notes = [523.25, 659.25, 783.99, 1046.5]; // C5, E5, G5, C6 arpeggio
       notes.forEach((freq, idx) => {
@@ -126,7 +155,7 @@ export function ConfidenceBoostModal({ isOpen, onClose, canvaCatalogUrl }: Confi
         osc.type = 'sine';
         const startTime = audioCtx.currentTime + idx * 0.08;
         osc.frequency.setValueAtTime(freq, startTime);
-        gain.gain.setValueAtTime(0.2, startTime);
+        gain.gain.setValueAtTime(0.28, startTime);
         gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.38);
         osc.connect(gain);
         gain.connect(audioCtx.destination);
@@ -139,6 +168,7 @@ export function ConfidenceBoostModal({ isOpen, onClose, canvaCatalogUrl }: Confi
   };
 
   const resetBubbles = () => {
+    poppedIdsRef.current.clear();
     const initial: Bubble[] = SPACED_WALL_SPOTS.map((spot, idx) => ({
       id: Date.now() + idx,
       x: spot.x,
@@ -184,7 +214,10 @@ export function ConfidenceBoostModal({ isOpen, onClose, canvaCatalogUrl }: Confi
     playCelebrationChime();
   };
 
-  const handlePop = (bubble: Bubble, event: MouseEvent) => {
+  const handlePop = (bubble: Bubble, event: SyntheticEvent) => {
+    if (poppedIdsRef.current.has(bubble.id)) return;
+    poppedIdsRef.current.add(bubble.id);
+
     playPopSound();
 
     const availableQuotes = CONFIDENCE_QUOTES.filter(q => q !== currentQuote);
@@ -275,8 +308,8 @@ export function ConfidenceBoostModal({ isOpen, onClose, canvaCatalogUrl }: Confi
 
           {/* Unified Top Area: Instruction, Revealed Quote & Progress Bar directly below phrase */}
           <div className="relative z-30 w-full px-6 max-w-4xl mx-auto pt-2 pb-2 text-center pointer-events-none flex-shrink-0 flex flex-col items-center">
-            <p className="text-[10px] md:text-[11px] uppercase tracking-[0.38em] text-gray-400 font-sans font-bold mb-2">
-              Haz pop haciendo clic
+            <p className="text-[10px] sm:text-[11px] uppercase tracking-[0.38em] text-gray-400 font-sans font-semibold mb-2">
+              Reventar rápido las burbujas
             </p>
 
             {/* Revealed Quote Display - Only appears upon first pop */}
@@ -326,6 +359,10 @@ export function ConfidenceBoostModal({ isOpen, onClose, canvaCatalogUrl }: Confi
               >
                 <motion.button
                   type="button"
+                  onPointerDown={(e) => {
+                    unlockSharedAudio();
+                    handlePop(bubble, e);
+                  }}
                   onClick={(e) => handlePop(bubble, e)}
                   initial={{ scale: 0, opacity: 0 }}
                   animate={{
@@ -380,11 +417,16 @@ export function ConfidenceBoostModal({ isOpen, onClose, canvaCatalogUrl }: Confi
             )}
           </div>
 
-          {/* Bottom Footer - Ultra clean faded text only */}
-          <footer className="relative z-40 w-full px-6 py-3 pb-5 flex flex-col items-center justify-center pointer-events-none bg-gradient-to-t from-[#fbfbfa] via-[#fbfbfa]/80 to-transparent">
-            <span className="text-[9px] uppercase tracking-[0.35em] font-sans font-medium text-gray-400/60 select-none">
-              revienta rápido
-            </span>
+          {/* Bottom Footer - POGUESHOP.GT Instagram link */}
+          <footer className="relative z-40 w-full px-6 py-3 pb-5 flex flex-col items-center justify-center bg-gradient-to-t from-[#fbfbfa] via-[#fbfbfa]/80 to-transparent">
+            <a
+              href={instagramUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-[9px] uppercase tracking-[0.35em] font-sans font-bold text-gray-400 hover:text-black transition-colors"
+            >
+              <Instagram size={11} /> POGUESHOP.GT
+            </a>
           </footer>
 
           {/* BLACK GIFT DISCOUNT CARD MODAL */}
@@ -494,11 +536,15 @@ export function GiftEnvelopeSection({ onOpen }: GiftEnvelopeSectionProps) {
         <div className="flex justify-center">
           <motion.button
             type="button"
-            onClick={onOpen}
+            onPointerDown={() => unlockSharedAudio()}
+            onClick={() => {
+              unlockSharedAudio();
+              onOpen();
+            }}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             className="group relative w-[260px] sm:w-[290px] h-[155px] sm:h-[170px] bg-[#0d0d0f] text-white rounded-xl shadow-[0_16px_38px_rgba(0,0,0,0.22)] hover:shadow-[0_22px_45px_rgba(0,0,0,0.35)] border border-white/15 overflow-hidden flex flex-col items-center justify-center p-5 cursor-pointer text-center"
-            aria-label="Abrir sobre de confidence boost"
+            aria-label="Abrir sobre de regalo especial"
           >
             {/* Subtle Luxury Satin Sheen */}
             <div className="absolute inset-0 bg-gradient-to-b from-white/[0.05] via-transparent to-black/40 pointer-events-none" />
